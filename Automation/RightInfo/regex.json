@@ -1,0 +1,120 @@
+{
+    "RightFactory": {
+        "ThamDuDaiHoiCoDong": "^(?!.*(theo nghị quyết|tổ chức phát hành))(.*(tham dự|(lấy|xin) ý|tổ chức|họp|đại hội|đề cử|ứng cử|bầu cử|đhđcđ|đhcđ)(.*?)(cổ đông|đhđcđ|đhcđ|thành viên|nhân sự|bất thường|nhà đầu tư|sở hữu trái phiếu|thường niên))",
+        "ChiaCoTucBangTien": "^(?!.*chuyển đổi)(.*(chi trả|\\bchi\\b|chia|tạm ứng|nhận|thanh toán|\\btrả\\b|quyền.*hưởng).*(cổ tức|lợi tức|còn lại).*tiền)",
+        "ChiaCoTucBangCoPhieu": "(?=.*(chi trả|\\btrả\\b|chia|tạm ứng|nhận|thanh toán|\\bchi\\b).*(cổ tức|lợi tức))(?=.*(bằng cổ phiếu|phát hành cổ phiếu|cổ phiếu)).*",
+        "CoPhieuThuong": "(cổ phiếu thưởng|cổ phiếu quỹ|từ nguồn.*chủ sở hữu)",
+        "QuyenMua": "(quyền mua|chào bán|mua.*cổ phiếu)",
+        "TraLaiTraiPhieu": "^(?!.*gốc)(?=.*lãi)(?=.*trái phiếu).*",
+        "TraGocVaLaiTraiPhieu": "(?=.*(lãi.*gốc|gốc.*lãi))(?=.*trái phiếu).*",
+        "ChuyenDoiTraiPhieuThanhCoPhieu": "(chuyển đổi|hoán đổi)(.*?)trái phiếu",
+        "ChuyenDoiCoPhieuThanhCoPhieu": "(chuyển đổi|hoán đổi)(.*?)cổ phiếu",
+        "TraLoiTucBangChungQuyen": "(?=.*(chứng quyền|quyền))(?=.*đáo hạn).*",
+        "LoaiTru": "^(?!.*thay đổi nhân sự)(.*(gia hạn|thay đổi|điều chỉnh|\\b(hủy|huỷ)\\b|đính chính|về việc.*thời gian|nội dung.*(tỷ|tỉ) lệ|mua lại.*trái phiếu|bổ sung (thêm nội dung|nội dung|lý do)|thông báo.*tạm hoãn))"
+    },
+
+    "ThamDuDaiHoiCoDong": {
+        "NgayThucHienDuKien": "^(?!.*dang ky cuoi cung)(du kien thoi gian|thoi gian|ngay|thoi han)"
+    },
+
+    "ChiaCoTucBangTien": {
+        "NgayThucHienDuKien": "^(?!.*dang ky cuoi cung)(thoi gian|ngay|thoi han)",
+        "TyLeThucHien": "\\d+[\\d,.]*\\s?/?%"
+    },
+
+    "ChiaCoTucBangCoPhieu": {
+        "TyLeThucHien": {
+            "Filter": "^(?!.*dang ky cuoi cung)(thoi gian|ngay|thoi han)",
+            "PhanTram": "\\d+[\\d,.]*\\s?/?%",
+            "PhanSo": "\\d+[\\d,.]*\\s?:\\s?\\d+[\\d,.]*"
+        }
+    },
+
+    "CoPhieuThuong": {
+        "TyLeThucHien": {
+            "Filter": "^(?!.*dang ky cuoi cung)(thoi gian|ngay|thoi han)",
+            "PhanTram": "\\d+[\\d,.]*\\s?/?%",
+            "PhanSo": "\\d+[\\d,.]*\\s?:\\s?\\d+[\\d,.]*"
+        }
+    },
+
+    "QuyenMua": {
+        "TyLeThucHien": "\\d+[\\d,.]*\\s?:\\s?\\d+[\\d,.]*",
+        "GiaPhatHanh": {
+            "Filter": "gia phat hanh.*\\d+[\\d,.]*",
+            "Ngay": "\\d+[\\d,.]*"
+        },
+        "NgayBatDauVaKetThucChuyenNhuong": {
+            "Filter": "thoi gian chuyen nhuong quyen mua.*\\d{1,2}/\\d{1,2}/\\d{4}",
+            "Ngay": "\\d{1,2}/\\d{1,2}/\\d{4}"
+        },
+        "NgayBatDauVaKetThucDangKyQuyenMua": {
+            "Filter": "thoi gian dang ky.*dat mua.*\\d{1,2}/\\d{1,2}/\\d{4}",
+            "Ngay": "\\d{1,2}/\\d{1,2}/\\d{4}"
+        }
+    },
+
+    "TraLaiTraiPhieu": {
+        "TyLeThucHien": {
+            "1": "trai phieu.*?(\\d+[\\d,.]*)\\s?(dong|vnd)",
+            "2": "(\\d+[\\d,.]*)\\s?dong tien lai"
+        },
+        "NgayThucHienDuKien": {
+            "1": "(thoi gian|ngay|thoi han) thuc thanh toan.*",
+            "2": "(thoi gian|ngay|thoi han) (thanh toan|thuc hien).*"
+        }
+    },
+
+    "TraGocVaLaiTraiPhieu": {
+        "TyLeThucHien": {
+            "LaiSuat": "(\\d+[\\d,.]*)\\s?%\\s?/\\s?nam",
+            "GiaTri": "(\\d+[\\d,.]*)\\s?(dong|vnd)"
+        },
+        "NgayThucHienDuKien": {
+            "1": "(thoi gian|ngay|thoi han) thuc thanh toan.*",
+            "2": "(thoi gian|ngay|thoi han) (thanh toan|thuc hien).*"
+        }
+    },
+
+    "ChuyenDoiTraiPhieuThanhCoPhieu": {
+        "TyLeThucHien": {
+            "Filter": "^ty le (chuyen doi|hoan doi|thuc hien)",
+            "PhanSo": "\\d+[\\d,.]*\\s?:\\s?\\d+[\\d,.]*"
+        },
+        "NgayThucHienDuKien": {
+            "Filter": "^(thoi gian|thoi han) dang ky (chuyen doi|hoan doi|thuc hien)",
+            "Ngay": "\\d{1,2}/\\d{1,2}/\\d{4}"
+        },
+        "MaCoPhieuChuyenDoi": {
+            "Filter": "^ty le (chuyen doi|hoan doi|thuc hien)",
+            "MaChungKhoan": "(co phieu|ma chung khoan|ma ck).*\\b(\\w{3})\\b"
+        }
+    },
+
+    "ChuyenDoiCoPhieuThanhCoPhieu": {
+        "TyLeThucHien": {
+            "Filter": "^ty le (chuyen doi|hoan doi|thuc hien)",
+            "PhanSo": "\\d+[\\d,.]*\\s?:\\s?\\d+[\\d,.]*"
+        },
+        "MaCoPhieuChuyenDoi": {
+            "Filter": "^ty le (chuyen doi|hoan doi|thuc hien)",
+            "MaChungKhoan": "(co phieu|ma chung khoan|ma ck).*\\b(\\w{3})\\b"
+        }
+    },
+
+    "TraLoiTucBangChungQuyen": {
+        "NgayThucHienDuKien": {
+            "Filter": "(thoi gian|ngay|thoi han) (thanh toan|thuc hien)"
+        }
+    },
+
+    "CWExtractor": {
+        "TenToChucPhatHanh": "(?<=tên tổ chức phát hành).*?(?=mã chứng quyền)",
+        "MaChungQuyen": "(?<=ma chung quyen).*?(?=ty le thanh toan)",
+        "TyLeChuyenDoi": "(?<=ty le thanh toan).*?(?=gia thanh toan)",
+        "GiaThucHien": "(?<=gia thanh toan)\\W+([\\d.,]+)\\W+(?=(vnd|dong))",
+        "NgayGiaoDichCuoiCung": "(?<=ngay giao dich cuoi cung).*?(?=ngay dao han)",
+        "NgayDaoHan": "(?<=ngay dao han)\\W+\\d{1,2}/\\d{1,2}/\\d{4}\\W+(?=gia)",
+        "GiaThanhToan": "(?<=gia thanh toan chung quyen).*?(?=(vnd|dong))"
+    }
+}

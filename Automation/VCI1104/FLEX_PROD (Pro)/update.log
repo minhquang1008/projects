@@ -1,0 +1,44 @@
+03/10/2022 5:48:56 PM -- UPDATE TIME:03/10/2022 5:48:56 PM
+03/10/2022 5:48:56 PM -- Starting Online-Update  version 1.0.0.1
+03/10/2022 5:48:56 PM -- OS:      Microsoft Windows NT 6.2.9200.0
+03/10/2022 5:48:56 PM -- Machine: RM-DT-DVHIEP.PHS
+03/10/2022 5:48:56 PM -- User:    hiepdang
+03/10/2022 5:48:56 PM -- Waiting for Parent-Application to exit ( 1sec )...
+03/10/2022 5:48:57 PM -- Killing Process after waiting
+03/10/2022 5:48:57 PM -- Waiting for Parent-Application to exit ( 1sec )...
+03/10/2022 5:48:58 PM -- Killing Process after waiting
+03/10/2022 5:48:59 PM -- Begin clearAttributes
+03/10/2022 5:48:59 PM -- Begin clearAttributes with path: C:\PHS-APP\PROD\FLEX_PROD
+03/10/2022 5:48:59 PM -- Begin remove FileAttributes.ReadOnly
+03/10/2022 5:48:59 PM -- ...
+03/10/2022 5:48:59 PM -- End remove FileAttributes.ReadOnly
+03/10/2022 5:48:59 PM -- Begin Add Full Permission
+03/10/2022 5:48:59 PM -- End Add Full Permission
+03/10/2022 5:48:59 PM -- Downloading... 
+03/10/2022 5:48:59 PM -- Update Path: http://192.168.10.111/Deployment/Client/6705172.zip
+03/10/2022 5:48:59 PM -- done in 0.141 seconds
+
+03/10/2022 5:48:59 PM -- unpacking ...
+03/10/2022 5:48:59 PM -- unpacking ... x.Name:AppCore.dll
+03/10/2022 5:48:59 PM -- unpacking ... Copy file:0
+03/10/2022 5:48:59 PM -- unpacking ... Copy file:AppCore.dll
+03/10/2022 5:48:59 PM -- Stream: AppCore.dll
+03/10/2022 5:48:59 PM -- unpacking ... x.Name:CommonLibrary.dll
+03/10/2022 5:48:59 PM -- unpacking ... Copy file:0
+03/10/2022 5:48:59 PM -- unpacking ... Copy file:CommonLibrary.dll
+03/10/2022 5:48:59 PM -- Stream: CommonLibrary.dll
+03/10/2022 5:48:59 PM -- unpacking ... x.Name:@DIRECT.exe
+03/10/2022 5:48:59 PM -- unpacking ... Copy file:0
+03/10/2022 5:48:59 PM -- unpacking ... Copy file:@DIRECT.exe
+03/10/2022 5:48:59 PM -- Stream: @DIRECT.exe
+Unpacked.03/10/2022 5:48:59 PM -- unpacked to C:\Users\hiepdang\AppData\Local\Temp\dir1637867312
+03/10/2022 5:48:59 PM -- copying files ...
+03/10/2022 5:48:59 PM -- Update version:
+03/10/2022 5:48:59 PM -- List File Update: @DIRECT.exe
+03/10/2022 5:48:59 PM -- List File Update: AppCore.dll
+03/10/2022 5:48:59 PM -- List File Update: CommonLibrary.dll
+03/10/2022 5:48:59 PM -- Update Version Directory
+03/10/2022 5:48:59 PM -- copied!
+03/10/2022 5:48:59 PM -- temp-files deleted
+Starting programme... started
+03/10/2022 5:49:01 PM -- Update successful and finished. Exiting Update-Process now.

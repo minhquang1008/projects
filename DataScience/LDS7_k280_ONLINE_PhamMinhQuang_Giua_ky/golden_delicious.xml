@@ -1,0 +1,534 @@
+<?xml version="1.0"?>
+<table>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>granny_smith</fruit_subtype>
+    <mass>192</mass>
+    <width>8.4</width>
+    <height> 7.3</height>
+    <color_score>0.55</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>granny_smith</fruit_subtype>
+    <mass>180</mass>
+    <width>8.0</width>
+    <height> 6.8</height>
+    <color_score>0.59</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>granny_smith</fruit_subtype>
+    <mass>176</mass>
+    <width>7.4</width>
+    <height> 7.2</height>
+    <color_score>0.60</color_score>
+  </row>
+  <row>
+    <fruit_label>2</fruit_label>
+    <fruit_name>mandarin</fruit_name>
+    <fruit_subtype>mandarin</fruit_subtype>
+    <mass> 86</mass>
+    <width>6.2</width>
+    <height> 4.7</height>
+    <color_score>0.80</color_score>
+  </row>
+  <row>
+    <fruit_label>2</fruit_label>
+    <fruit_name>mandarin</fruit_name>
+    <fruit_subtype>mandarin</fruit_subtype>
+    <mass> 84</mass>
+    <width>6.0</width>
+    <height> 4.6</height>
+    <color_score>0.79</color_score>
+  </row>
+  <row>
+    <fruit_label>2</fruit_label>
+    <fruit_name>mandarin</fruit_name>
+    <fruit_subtype>mandarin</fruit_subtype>
+    <mass> 80</mass>
+    <width>5.8</width>
+    <height> 4.3</height>
+    <color_score>0.77</color_score>
+  </row>
+  <row>
+    <fruit_label>2</fruit_label>
+    <fruit_name>mandarin</fruit_name>
+    <fruit_subtype>mandarin</fruit_subtype>
+    <mass> 80</mass>
+    <width>5.9</width>
+    <height> 4.3</height>
+    <color_score>0.81</color_score>
+  </row>
+  <row>
+    <fruit_label>2</fruit_label>
+    <fruit_name>mandarin</fruit_name>
+    <fruit_subtype>mandarin</fruit_subtype>
+    <mass> 76</mass>
+    <width>5.8</width>
+    <height> 4.0</height>
+    <color_score>0.81</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>braeburn</fruit_subtype>
+    <mass>178</mass>
+    <width>7.1</width>
+    <height> 7.8</height>
+    <color_score>0.92</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>braeburn</fruit_subtype>
+    <mass>172</mass>
+    <width>7.4</width>
+    <height> 7.0</height>
+    <color_score>0.89</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>braeburn</fruit_subtype>
+    <mass>166</mass>
+    <width>6.9</width>
+    <height> 7.3</height>
+    <color_score>0.93</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>braeburn</fruit_subtype>
+    <mass>172</mass>
+    <width>7.1</width>
+    <height> 7.6</height>
+    <color_score>0.92</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>braeburn</fruit_subtype>
+    <mass>154</mass>
+    <width>7.0</width>
+    <height> 7.1</height>
+    <color_score>0.88</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>golden_delicious</fruit_subtype>
+    <mass>164</mass>
+    <width>7.3</width>
+    <height> 7.7</height>
+    <color_score>0.70</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>golden_delicious</fruit_subtype>
+    <mass>152</mass>
+    <width>7.6</width>
+    <height> 7.3</height>
+    <color_score>0.69</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>golden_delicious</fruit_subtype>
+    <mass>156</mass>
+    <width>7.7</width>
+    <height> 7.1</height>
+    <color_score>0.69</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>golden_delicious</fruit_subtype>
+    <mass>156</mass>
+    <width>7.6</width>
+    <height> 7.5</height>
+    <color_score>0.67</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>golden_delicious</fruit_subtype>
+    <mass>168</mass>
+    <width>7.5</width>
+    <height> 7.6</height>
+    <color_score>0.73</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>cripps_pink</fruit_subtype>
+    <mass>162</mass>
+    <width>7.5</width>
+    <height> 7.1</height>
+    <color_score>0.83</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>cripps_pink</fruit_subtype>
+    <mass>162</mass>
+    <width>7.4</width>
+    <height> 7.2</height>
+    <color_score>0.85</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>cripps_pink</fruit_subtype>
+    <mass>160</mass>
+    <width>7.5</width>
+    <height> 7.5</height>
+    <color_score>0.86</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>cripps_pink</fruit_subtype>
+    <mass>156</mass>
+    <width>7.4</width>
+    <height> 7.4</height>
+    <color_score>0.84</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>cripps_pink</fruit_subtype>
+    <mass>140</mass>
+    <width>7.3</width>
+    <height> 7.1</height>
+    <color_score>0.87</color_score>
+  </row>
+  <row>
+    <fruit_label>1</fruit_label>
+    <fruit_name>apple</fruit_name>
+    <fruit_subtype>cripps_pink</fruit_subtype>
+    <mass>170</mass>
+    <width>7.6</width>
+    <height> 7.9</height>
+    <color_score>0.88</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>spanish_jumbo</fruit_subtype>
+    <mass>342</mass>
+    <width>9.0</width>
+    <height> 9.4</height>
+    <color_score>0.75</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>spanish_jumbo</fruit_subtype>
+    <mass>356</mass>
+    <width>9.2</width>
+    <height> 9.2</height>
+    <color_score>0.75</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>spanish_jumbo</fruit_subtype>
+    <mass>362</mass>
+    <width>9.6</width>
+    <height> 9.2</height>
+    <color_score>0.74</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>selected_seconds</fruit_subtype>
+    <mass>204</mass>
+    <width>7.5</width>
+    <height> 9.2</height>
+    <color_score>0.77</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>selected_seconds</fruit_subtype>
+    <mass>140</mass>
+    <width>6.7</width>
+    <height> 7.1</height>
+    <color_score>0.72</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>selected_seconds</fruit_subtype>
+    <mass>160</mass>
+    <width>7.0</width>
+    <height> 7.4</height>
+    <color_score>0.81</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>selected_seconds</fruit_subtype>
+    <mass>158</mass>
+    <width>7.1</width>
+    <height> 7.5</height>
+    <color_score>0.79</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>selected_seconds</fruit_subtype>
+    <mass>210</mass>
+    <width>7.8</width>
+    <height> 8.0</height>
+    <color_score>0.82</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>selected_seconds</fruit_subtype>
+    <mass>164</mass>
+    <width>7.2</width>
+    <height> 7.0</height>
+    <color_score>0.80</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>turkey_navel</fruit_subtype>
+    <mass>190</mass>
+    <width>7.5</width>
+    <height> 8.1</height>
+    <color_score>0.74</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>turkey_navel</fruit_subtype>
+    <mass>142</mass>
+    <width>7.6</width>
+    <height> 7.8</height>
+    <color_score>0.75</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>turkey_navel</fruit_subtype>
+    <mass>150</mass>
+    <width>7.1</width>
+    <height> 7.9</height>
+    <color_score>0.75</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>turkey_navel</fruit_subtype>
+    <mass>160</mass>
+    <width>7.1</width>
+    <height> 7.6</height>
+    <color_score>0.76</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>turkey_navel</fruit_subtype>
+    <mass>154</mass>
+    <width>7.3</width>
+    <height> 7.3</height>
+    <color_score>0.79</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>turkey_navel</fruit_subtype>
+    <mass>158</mass>
+    <width>7.2</width>
+    <height> 7.8</height>
+    <color_score>0.77</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>turkey_navel</fruit_subtype>
+    <mass>144</mass>
+    <width>6.8</width>
+    <height> 7.4</height>
+    <color_score>0.75</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>turkey_navel</fruit_subtype>
+    <mass>154</mass>
+    <width>7.1</width>
+    <height> 7.5</height>
+    <color_score>0.78</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>turkey_navel</fruit_subtype>
+    <mass>180</mass>
+    <width>7.6</width>
+    <height> 8.2</height>
+    <color_score>0.79</color_score>
+  </row>
+  <row>
+    <fruit_label>3</fruit_label>
+    <fruit_name>orange</fruit_name>
+    <fruit_subtype>turkey_navel</fruit_subtype>
+    <mass>154</mass>
+    <width>7.2</width>
+    <height> 7.2</height>
+    <color_score>0.82</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>spanish_belsan</fruit_subtype>
+    <mass>194</mass>
+    <width>7.2</width>
+    <height>10.3</height>
+    <color_score>0.70</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>spanish_belsan</fruit_subtype>
+    <mass>200</mass>
+    <width>7.3</width>
+    <height>10.5</height>
+    <color_score>0.72</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>spanish_belsan</fruit_subtype>
+    <mass>186</mass>
+    <width>7.2</width>
+    <height> 9.2</height>
+    <color_score>0.72</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>spanish_belsan</fruit_subtype>
+    <mass>216</mass>
+    <width>7.3</width>
+    <height>10.2</height>
+    <color_score>0.71</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>spanish_belsan</fruit_subtype>
+    <mass>196</mass>
+    <width>7.3</width>
+    <height> 9.7</height>
+    <color_score>0.72</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>spanish_belsan</fruit_subtype>
+    <mass>174</mass>
+    <width>7.3</width>
+    <height>10.1</height>
+    <color_score>0.72</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>unknown</fruit_subtype>
+    <mass>132</mass>
+    <width>5.8</width>
+    <height> 8.7</height>
+    <color_score>0.73</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>unknown</fruit_subtype>
+    <mass>130</mass>
+    <width>6.0</width>
+    <height> 8.2</height>
+    <color_score>0.71</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>unknown</fruit_subtype>
+    <mass>116</mass>
+    <width>6.0</width>
+    <height> 7.5</height>
+    <color_score>0.72</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>unknown</fruit_subtype>
+    <mass>118</mass>
+    <width>5.9</width>
+    <height> 8.0</height>
+    <color_score>0.72</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>unknown</fruit_subtype>
+    <mass>120</mass>
+    <width>6.0</width>
+    <height> 8.4</height>
+    <color_score>0.74</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>unknown</fruit_subtype>
+    <mass>116</mass>
+    <width>6.1</width>
+    <height> 8.5</height>
+    <color_score>0.71</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>unknown</fruit_subtype>
+    <mass>116</mass>
+    <width>6.3</width>
+    <height> 7.7</height>
+    <color_score>0.72</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>unknown</fruit_subtype>
+    <mass>116</mass>
+    <width>5.9</width>
+    <height> 8.1</height>
+    <color_score>0.73</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>unknown</fruit_subtype>
+    <mass>152</mass>
+    <width>6.5</width>
+    <height> 8.5</height>
+    <color_score>0.72</color_score>
+  </row>
+  <row>
+    <fruit_label>4</fruit_label>
+    <fruit_name>lemon</fruit_name>
+    <fruit_subtype>unknown</fruit_subtype>
+    <mass>118</mass>
+    <width>6.1</width>
+    <height> 8.1</height>
+    <color_score>0.70</color_score>
+  </row>
+</table>

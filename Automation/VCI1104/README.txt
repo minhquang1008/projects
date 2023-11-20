@@ -1,0 +1,2 @@
+FLEX_PROD là UAT7
+FLEX_PROD (Pro) là PRO

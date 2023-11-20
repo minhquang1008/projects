@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>169</width>
+    <height>195</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QComboBox" name="comboBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>151</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>IVB</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>FUBON</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>OCB</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>HUANAN</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>MEGA</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>FIRST</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>VCB</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>SINOPAC</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>BIDV</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>VTB</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>EIB</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>ESUN</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>TCB</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>120</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Xác nhận</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>80</y>
+      <width>151</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>0</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Chọn ngân hàng</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>60</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Nhập password</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>169</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
