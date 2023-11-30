@@ -1,4 +1,4 @@
-﻿/*Daily*/
+﻿/*Daily - BOM - CoSo*/
 
 /*Actual vs Target - Fee Income (Phí giao dịch - Thực tế và chỉ tiêu) */
 
@@ -18,11 +18,11 @@ SET @WorkDaysOfYear = (
 
 WITH
 
-[BranchTarget] AS (
+[TargetByBranch] AS (
     SELECT 
-        [BranchID]
-        , CAST([Target] / @WorkDaysOfYear AS DECIMAL(15,2)) [FeeIncome]
-    FROM [BranchTargetByYear] 
+        [BranchID] 
+        , CAST(CAST([Target] AS FLOAT) / @WorkDaysOfYear AS DECIMAL(30,8)) [FeeIncome]
+    FROM [DWH-AppData].[dbo].[BMD.FlexTarget]
     WHERE [Year] = YEAR(@Date)
         AND [Measure] = 'Fee Income'
 )
@@ -36,16 +36,19 @@ WITH
         ON [trading_record].[date] = [relationship].[date]
         AND [trading_record].[sub_account] = [relationship].[sub_account]
     WHERE [trading_record].[date] = @Date
+		AND [trading_record].[type_of_asset] NOT IN (N'Trái phiếu doanh nghiệp', N'Trái phiếu', N'Trái phiếu chính phủ')
+		AND [relationship].[account_code] NOT LIKE '022P%'
     GROUP BY [relationship].[branch_id]
 )
 
 SELECT 
-	[BranchTarget].[BranchID]
+	[TargetByBranch].[BranchID]
 	, ISNULL([BranchActual].[FeeIncome],0) [Actual]
-    , [BranchTarget].[FeeIncome] [Target]
-FROM [BranchTarget]
+    , [TargetByBranch].[FeeIncome] [Target]
+FROM [TargetByBranch]
 LEFT JOIN [BranchActual]
-    ON [BranchTarget].[BranchID] = [BranchActual].[BranchID]
+    ON [TargetByBranch].[BranchID] = [BranchActual].[BranchID]
+ORDER BY 1
 
 
 END

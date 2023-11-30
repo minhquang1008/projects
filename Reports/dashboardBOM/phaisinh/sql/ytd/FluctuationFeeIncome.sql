@@ -14,8 +14,7 @@ SET @Since = DATETIMEFROMPARTS(YEAR(@Date)-4,1,1,0,0,0,0);
 WITH
 
 [TargetByBranch] AS (
-	SELECT
-		[BranchID]
+	SELECT [BranchID]
 	FROM [BranchTargetByYear]
 	WHERE [Year] = YEAR(@Date)
 		AND [Measure] = 'Fee Income'

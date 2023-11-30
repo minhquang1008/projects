@@ -23,24 +23,23 @@ SET @FirstDateOfMonthOfPreviousYear = (SELECT DATETIMEFROMPARTS(YEAR(@DateOfPrev
 DECLARE @PrevTotalContracts DECIMAL(30,2);
 SET @PrevTotalContracts = (
 	SELECT
-		SUM(ISNULL([KhoiLuongKhopLenh],0) + ISNULL([KhoiLuongThoaThuan],0)) [TotalContracts]
-	FROM [DWH-ThiTruong].[dbo].[KetQuaGiaoDichPhaiSinhVietStock]
-	WHERE [Ngay] BETWEEN @FirstDateOfMonthOfPreviousYear AND @DateOfPreviousYear
+		SUM(ISNULL([FDS_MarketInfo].[MkTradingVol],0)) [TotalContracts]
+	FROM [DWH-CoSo].[dbo].[FDS_MarketInfo]
+	WHERE [Txdate] BETWEEN @FirstDateOfMonthOfPreviousYear AND @DateOfPreviousYear
 );
 
 DECLARE @CurrentTotalContracts DECIMAL(30,2);
 SET @CurrentTotalContracts = (
 	SELECT
-		SUM(ISNULL([KhoiLuongKhopLenh],0) + ISNULL([KhoiLuongThoaThuan],0)) [TotalContracts]
-	FROM [DWH-ThiTruong].[dbo].[KetQuaGiaoDichPhaiSinhVietStock]
-	WHERE [Ngay] BETWEEN @FirstDateOfMonthOfCurrentYear AND @Date
+		SUM(ISNULL([FDS_MarketInfo].[MkTradingVol],0)) [TotalContracts]
+	FROM [DWH-CoSo].[dbo].[FDS_MarketInfo]
+	WHERE [Txdate] BETWEEN @FirstDateOfMonthOfCurrentYear AND @Date
 );
 
 WITH 
 
 [TargetByBranch] AS (
-	SELECT
-		[BranchID]
+	SELECT [BranchID]
 	FROM [BranchTargetByYear]
 	WHERE [Year] = YEAR(@Date)
 		AND [Measure] = 'Market Share'
@@ -58,7 +57,7 @@ WITH
 
 , [PrevMarketShare] AS (
 	SELECT
-		SUM([RRE0018].[SoLuongHopDong]) / @PrevTotalContracts / 2 [MarketShare]
+		CAST(CAST(SUM([RRE0018].[SoLuongHopDong]) AS DECIMAL(30,8)) / @PrevTotalContracts / 2 AS DECIMAL(30,8)) [MarketShare]
 	FROM [RRE0018]
 	LEFT JOIN [Rel]
         ON [Rel].[AccountCode] = [RRE0018].[SoTaiKhoan]
@@ -69,7 +68,7 @@ WITH
 
 , [CurrentMarketShare] AS (
 	SELECT
-		SUM([RRE0018].[SoLuongHopDong]) / @CurrentTotalContracts / 2 [MarketShare]
+		CAST(CAST(SUM([RRE0018].[SoLuongHopDong]) AS DECIMAL(30,8)) / @CurrentTotalContracts / 2 AS DECIMAL(30,8)) [MarketShare]
 	FROM [RRE0018]
 	LEFT JOIN [Rel]
 		ON [Rel].[AccountCode] = [RRE0018].[SoTaiKhoan]

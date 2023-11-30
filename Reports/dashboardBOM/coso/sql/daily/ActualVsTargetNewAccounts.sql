@@ -1,4 +1,4 @@
-﻿/*Daily - BOM*/
+﻿/*Daily - BOM - CoSo*/
 
 /*Actual vs Target - New Accounts (Tài khoản mở mới - Thực tế và chỉ tiêu) */
 
@@ -18,47 +18,77 @@ SET @WorkDaysOfYear = (
 
 WITH
 
-[BranchTarget] AS (
-    SELECT 
+[TargetByBranch] AS (
+	SELECT 
         [BranchID] 
-        , CAST([Target] / @WorkDaysOfYear AS DECIMAL(15,2)) [NewAccounts]
-    FROM [BranchTargetByYear] 
+        , CAST(CAST([Target] AS FLOAT) / @WorkDaysOfYear AS DECIMAL(30,8)) [NewAccounts]
+    FROM [DWH-AppData].[dbo].[BMD.FlexTarget]
     WHERE [Year] = YEAR(@Date)
         AND [Measure] = 'New Accounts'
 )
 
-, [Rel] AS (
+, [RRE0386.Flex] AS (
+	SELECT
+		[AUTOID]
+		, MIN([AUTOID]) OVER (PARTITION BY [SoTaiKhoan], [NgayMoTK]) [MinID]
+		, [NgayMoTK]
+		, [SoTaiKhoan]
+		, [IDNhanVienMoTK]
+	FROM [RRE0386]
+	WHERE [RRE0386].[NgayMoTK] = @Date
+		AND [RRE0386].[IDNhanVienHienTai] IS NOT NULL
+)
+
+, [FindLastBranchID] AS (
 	SELECT DISTINCT
-		[date] [Date]
-		, [branch_id] [BranchID]
-		, [broker_id] [BrokerID]
-		, [account_code] [AccountCode]
+		[relationship].[date]
+		, [relationship].[account_code] [SoTaiKhoan]
+		, [broker_id]
+		, LAST_VALUE([branch_id]) OVER(PARTITION BY [account_code], [broker_id] ORDER BY [account_code]) [branch_id]
 	FROM [relationship]
-	WHERE [date] = @Date
+	WHERE [relationship].[date] = @Date
+		AND [relationship].[account_code] IN (SELECT [SoTaiKhoan] FROM [RRE0386.Flex])
+)
+
+, [Rel] AS (
+	SELECT
+		[Date]
+		, [SoTaiKhoan]
+		, CASE
+			WHEN [broker_id] IS NULL AND [date] <> @Date THEN LEAD([branch_id]) OVER (PARTITION BY [SoTaiKhoan] ORDER BY [date])
+			ELSE [branch_id]
+		END [BranchID]
+	FROM [FindLastBranchID]
+)
+
+, [_RRE0386] AS (
+	SELECT
+		[NgayMoTK]
+		, [SoTaiKhoan]
+		, [IDNhanVienMoTK]
+	FROM [RRE0386.Flex]
+	WHERE [MinID] = [AUTOID]
 )
 
 , [BranchActual] AS (
 	SELECT
 		[Rel].[BranchID]
-		, CAST(COUNT(*) AS DECIMAL(8,2)) [NewAccounts]
-	FROM [customer_change]
+		, CAST(COUNT(*) AS DECIMAL(20,2)) [NewAccounts]
+	FROM [_RRE0386]
 	LEFT JOIN [Rel]
-		ON [Rel].[AccountCode] = [customer_change].[account_code]
-		AND [Rel].[date] = [customer_change].[open_date]
-	WHERE [customer_change].[open_date] = @Date
-		AND [customer_change].[open_or_close] = 'Mo'
-		AND [Rel].[BrokerID] IS NOT NULL -- không tính các tài khoản chưa duyệt nên chưa có môi giới
+		ON [Rel].[SoTaiKhoan] = [_RRE0386].[SoTaiKhoan]
+		AND [Rel].[Date] = [_RRE0386].[NgayMoTK]
 	GROUP BY [Rel].[BranchID]
 )
 
-SELECT 
-	[BranchTarget].[BranchID]
-	, SUM(ISNULL([BranchActual].[NewAccounts],0)) [Actual]
-    , SUM([BranchTarget].[NewAccounts]) [Target]
-FROM [BranchTarget]
+SELECT
+	[TargetByBranch].[BranchID]
+	, ISNULL([BranchActual].[NewAccounts],0) [Actual]
+    , [TargetByBranch].[NewAccounts] [Target]
+FROM [TargetByBranch]
 LEFT JOIN [BranchActual]
-    ON [BranchTarget].[BranchID] = [BranchActual].[BranchID]
-GROUP BY [BranchTarget].[BranchID]
+    ON [TargetByBranch].[BranchID] = [BranchActual].[BranchID]
+ORDER BY 1
 
 
 END

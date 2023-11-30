@@ -14,14 +14,20 @@ SET @FirstDateOfMonth = (SELECT DATETIMEFROMPARTS(YEAR(@Date),MONTH(@Date),1,0,0
 DECLARE @CurrentTotalContracts DECIMAL(30,2);
 SET @CurrentTotalContracts = (
 	SELECT
-		SUM(ISNULL([KhoiLuongKhopLenh],0) + ISNULL([KhoiLuongThoaThuan],0)) [TotalContracts]
-	FROM [DWH-ThiTruong].[dbo].[KetQuaGiaoDichPhaiSinhVietStock]
-	WHERE [Ngay] BETWEEN @FirstDateOfMonth AND @Date 
+		SUM(ISNULL([FDS_MarketInfo].[MkTradingVol],0)) [TotalContracts]
+	FROM [DWH-CoSo].[dbo].[FDS_MarketInfo]
+	WHERE [Txdate] BETWEEN @FirstDateOfMonth AND @Date 
 );
 
 WITH
 
-[TargetByBranch] AS (
+[Branch] AS (
+    SELECT DISTINCT [BranchID]
+	FROM [BranchTargetByYear]
+	WHERE [Year] = YEAR(@Date)
+)
+
+, [TargetByBranch] AS (
     SELECT [BranchID]
     FROM [BranchTargetByYear]
     WHERE [Measure] = 'Fee Income'
@@ -41,7 +47,7 @@ WITH
 , [ValueTotalBranches] AS (
 	SELECT 
         [Rel].[BranchID] [BranchID]
-        , SUM([RRE0018].[SoLuongHopDong]) / @CurrentTotalContracts / 2 [MarketShare]
+        , CAST(CAST(SUM([RRE0018].[SoLuongHopDong]) AS DECIMAL(30,8)) / @CurrentTotalContracts / 2 AS DECIMAL(30,8)) [MarketShare]
     FROM [RRE0018]
    LEFT JOIN [Rel]
         ON [Rel].[AccountCode] = [RRE0018].[SoTaiKhoan]
@@ -54,7 +60,7 @@ WITH
 , [Contribution] AS (
 	SELECT
 		[BranchID]
-		, [MarketShare]
+		, CAST([MarketShare] AS DECIMAL(7,5)) [MarketShare]
 		, CASE [MarketShare] 
 			WHEN 0 THEN 0
 			ELSE CAST([MarketShare] / SUM([MarketShare]) OVER() AS DECIMAL(7,6))
@@ -62,12 +68,15 @@ WITH
 	FROM [ValueTotalBranches]
 )
 
-SELECT 
-	[Contribution].[BranchID],
-	ISNULL([MarketShare], 0) [Value]
+SELECT
+	RANK() OVER(ORDER BY ISNULL([MarketShare], 0) DESC) [Rank]
+	, [Branch].[BranchID]
+	, ISNULL([MarketShare], 0) [Value]
 	, ISNULL([Contribution], 0) [Contribution]
-FROM [Contribution]
-ORDER BY 2 DESC
+FROM [Branch]
+LEFT JOIN [Contribution]
+	ON [Contribution].[BranchID] = [Branch].[BranchID]
+ORDER BY 1
 
 
 END

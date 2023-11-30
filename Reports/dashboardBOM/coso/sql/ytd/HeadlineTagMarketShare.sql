@@ -1,6 +1,6 @@
-﻿/*YTD*/
+﻿/*YTD - BOM - CoSo*/
 
-/* Headline Tag - Market Share (Phần trăm hoàn thành chỉ tiêu tháng - Thị phần) */
+/*Headline Tag - Market Share (Phần trăm hoàn thành chỉ tiêu tháng - Thị phần)*/
 
 BEGIN
 
@@ -23,24 +23,24 @@ SET @FirstDateOfPreviousYear = (SELECT DATETIMEFROMPARTS(YEAR(@DateOfPreviousYea
 DECLARE @MarketTradingValueOfPreviousPeriod DECIMAL(30,2);
 SET @MarketTradingValueOfPreviousPeriod = (
 	SELECT
-		SUM([TongGiaTriGiaoDich]) [TradingValue]
-	FROM [DWH-ThiTruong].[dbo].[KetQuaGiaoDichCoSoVietStock]
-	WHERE [San] IN ('HNX','HOSE')
-		AND [Ngay] BETWEEN @FirstDateOfPreviousYear AND @DateOfPreviousYear
+		CAST(SUM([MATCHVALUE]) AS DECIMAL(30,8)) [TradingValue]
+	FROM [Flex_MarketInfo]
+	WHERE [TRADEPLACE] IN ('HNX','HOSE')
+		AND [TXDATE] BETWEEN @FirstDateOfPreviousYear AND @DateOfPreviousYear
 );
 
 DECLARE @MarketTradingValueOfCurrentPeriod DECIMAL(30,2);
 SET @MarketTradingValueOfCurrentPeriod = (
 	SELECT
-		SUM([TongGiaTriGiaoDich]) [TradingValue]
-	FROM [DWH-ThiTruong].[dbo].[KetQuaGiaoDichCoSoVietStock]
-	WHERE [San] IN ('HNX','HOSE')
-		AND [Ngay] BETWEEN @FirstDateOfCurrentYear AND @Date
+		CAST(SUM([MATCHVALUE]) AS DECIMAL(30,8)) [TradingValue]
+	FROM [Flex_MarketInfo]
+	WHERE [TRADEPLACE] IN ('HNX','HOSE')
+		AND [TXDATE] BETWEEN @FirstDateOfCurrentYear AND @Date
 );
 
 WITH
 
-[BranchTarget] AS (
+[TargetByBranch] AS (
 	SELECT
 		[BranchID]
 	FROM [BranchTargetByYear]
@@ -48,51 +48,41 @@ WITH
 		AND [Measure] = 'Market Share'
 )
 
-, [ValueByBranchOfPreviousPeriod] AS (
+, [ValuePrevPeriod] AS (
 	SELECT
-		[relationship].[branch_id] [BranchID]
-		, SUM([trading_record].[value]) / @MarketTradingValueOfPreviousPeriod / 2 [MarketShare]
+		CAST(CAST(SUM([trading_record].[value]) AS DECIMAL(30,8)) / @MarketTradingValueOfPreviousPeriod / 2 AS DECIMAL(30,8)) [MarketShare]
 	FROM [trading_record]
 	LEFT JOIN [relationship]
 		ON [relationship].[sub_account] = [trading_record].[sub_account]
 		AND [relationship].[date] = [trading_record].[date]
 	WHERE [trading_record].[date] BETWEEN @FirstDateOfPreviousYear AND @DateOfPreviousYear
-	GROUP BY [relationship].[branch_id]
+		AND [relationship].[branch_id] IN (SELECT [BranchID] FROM [TargetByBranch])
+		AND [trading_record].[type_of_asset] NOT IN (N'Trái phiếu doanh nghiệp', N'Trái phiếu', N'Trái phiếu chính phủ')
+		AND [relationship].[account_code] NOT LIKE '022P%'
 )
 
-, [ValueByBranchOfCurrentPeriod] AS (
+, [ValueCurrentPeriod] AS (
 	SELECT
-		[relationship].[branch_id] [BranchID]
-		, SUM([trading_record].[value]) / @MarketTradingValueOfCurrentPeriod / 2 [MarketShare]
+		CAST(CAST(SUM([trading_record].[value]) AS DECIMAL(30,8)) / @MarketTradingValueOfCurrentPeriod / 2 AS DECIMAL(30,8)) [MarketShare]
 	FROM [trading_record]
 	LEFT JOIN [relationship]
 		ON [relationship].[sub_account] = [trading_record].[sub_account]
 		AND [relationship].[date] = [trading_record].[date]
 	WHERE [trading_record].[date] BETWEEN @FirstDateOfCurrentYear AND @Date
-	GROUP BY [relationship].[branch_id]
-)
-
-, [result] AS (
-	SELECT
-		[BranchTarget].[BranchID]
-		, ISNULL([ValueByBranchOfCurrentPeriod].[MarketShare],0) [MarketShare]
-		, ISNULL([ValueByBranchOfCurrentPeriod].[MarketShare],0) - ISNULL([ValueByBranchOfPreviousPeriod].[MarketShare],0) [AbsoluteChange]
-		, CASE 
-			WHEN ISNULL([ValueByBranchOfPreviousPeriod].[MarketShare],0) = 0 THEN 0
-			ELSE ISNULL([ValueByBranchOfCurrentPeriod].[MarketShare],0) / [ValueByBranchOfPreviousPeriod].[MarketShare] - 1
-		END [RelativeChange]
-	FROM [BranchTarget]
-	LEFT JOIN [ValueByBranchOfCurrentPeriod]
-		ON [BranchTarget].[BranchID] = [ValueByBranchOfCurrentPeriod].[BranchID]
-	LEFT JOIN [ValueByBranchOfPreviousPeriod]
-		ON [BranchTarget].[BranchID] = [ValueByBranchOfPreviousPeriod].[BranchID]
+		AND [relationship].[branch_id] IN (SELECT [BranchID] FROM [TargetByBranch])
+		AND [trading_record].[type_of_asset] NOT IN (N'Trái phiếu doanh nghiệp', N'Trái phiếu', N'Trái phiếu chính phủ')
+		AND [relationship].[account_code] NOT LIKE '022P%'
 )
 
 SELECT
-	SUM([MarketShare]) [MarketShare]
-	, SUM([AbsoluteChange]) [AbsoluteChange]
-	, SUM([RelativeChange]) [RelativeChange]
-FROM [result]
+	[ValueCurrentPeriod].[MarketShare] [MarketShare]
+	, [ValueCurrentPeriod].[MarketShare] - [ValuePrevPeriod].[MarketShare] [AbsoluteChange]
+	, CASE 
+		WHEN [ValuePrevPeriod].[MarketShare] = 0 THEN 0
+		ELSE [ValueCurrentPeriod].[MarketShare] / [ValuePrevPeriod].[MarketShare] - 1
+	END [RelativeChange]
+FROM [ValuePrevPeriod]
+CROSS JOIN [ValueCurrentPeriod]
 
 
 END

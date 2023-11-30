@@ -1,6 +1,6 @@
-﻿/*MTD*/
+﻿/*MTD - BOM - CoSo*/
 
-/* Fluctuation - Fee Income (Biến động phí giao dịch) */
+/*Fluctuation - Fee Income (Biến động phí giao dịch)*/
 
 BEGIN
 
@@ -13,7 +13,7 @@ SET @Since = DATEADD(DAY,1,EOMONTH(DATEADD(YEAR,-1,@Date)));
 
 WITH
 
-[BranchTarget] AS (
+[TargetByBranch] AS (
 	SELECT
 		[BranchID]
 	FROM [BranchTargetByYear]
@@ -39,32 +39,32 @@ WITH
 	SELECT 
 		[WorkDays].[Date]
 		, [WorkDays].[EndOfPeriod]
-		, [BranchTarget].[BranchID]
-	FROM [BranchTarget] CROSS JOIN [WorkDays]
+		, [TargetByBranch].[BranchID]
+	FROM [TargetByBranch] CROSS JOIN [WorkDays]
 )
 
-, [ValueByBranchByDate] AS (
+, [RawResult] AS (
 	SELECT
 		[trading_record].[date] [Date]
 		, [relationship].[branch_id] [BranchID]
-		, SUM([trading_record].[fee]) [FeeIncome]
+		, ISNULL(SUM([trading_record].[fee]), 0) [FeeIncome]
 	FROM [trading_record]
 	LEFT JOIN [relationship]
-		ON [trading_record].[date] = [relationship].[date]
+		ON [relationship].[date] = [trading_record].[Date]
 		AND [trading_record].[sub_account] = [relationship].[sub_account]
 	WHERE [trading_record].[date] BETWEEN @Since AND @Date
-		AND DAY([trading_record].[date]) <= DAY(@Date)
-	GROUP BY [relationship].[branch_id], [trading_record].[date]
+		AND [trading_record].[type_of_asset] NOT IN (N'Trái phiếu doanh nghiệp', N'Trái phiếu', N'Trái phiếu chính phủ')
+		AND [relationship].[account_code] NOT LIKE '022P%'
+	GROUP BY [trading_record].[date], [relationship].[branch_id]
 )
 
 SELECT
 	[Index].[EndOfPeriod] [Date]
-	, ISNULL(SUM([ValueByBranchByDate].[FeeIncome]),0) [Value]
+	, ISNULL(SUM([RawResult].[FeeIncome]), 0) [Value]
 FROM [Index]
-LEFT JOIN [ValueByBranchByDate]
-	ON [Index].[Date] = [ValueByBranchByDate].[Date]
-	AND [Index].[BranchID] = [ValueByBranchByDate].[BranchID]
-
+LEFT JOIN [RawResult]
+	ON [RawResult].[Date] = [Index].[Date]
+	AND [RawResult].[BranchID] = [Index].[BranchID]
 GROUP BY [Index].[EndOfPeriod]
 ORDER BY [Index].[EndOfPeriod]
 

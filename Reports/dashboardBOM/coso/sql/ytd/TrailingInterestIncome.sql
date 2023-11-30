@@ -1,6 +1,6 @@
-/*YTD*/
+﻿/*YTD - BOM - CoSo*/
 
-/*Trailing - Interest Income*/
+/*Trailing - Interest Income (So sánh 5 năm gần nhất)*/
 
 BEGIN
 
@@ -13,48 +13,55 @@ SET @Since = DATETIMEFROMPARTS(YEAR(@Date)-4,1,1,0,0,0,0);
 
 WITH 
 
-[YearlyTargetByBranch] AS (
+[BadDebt] AS (
+	SELECT 
+		CONVERT(VARCHAR(7), [Ngay], 126) [Ngay]
+		, [SoTaiKhoan]
+	FROM [BadDebtAccounts]
+	WHERE [Ngay] BETWEEN DATEADD(MONTH, -1, @Since) AND @Date
+		AND [LoaiNo] NOT IN (N'Hết nợ', N'TK đã đóng')
+)
+
+, [BranchList] AS (
+	SELECT [BranchID]
+	FROM [BranchTargetByYear] 
+	WHERE [Year] = YEAR(@Date)
+		AND [Measure] = 'Interest Income'
+)
+
+, [YearlyTarget] AS (
     SELECT 
-        [BranchID] 
-		, [Year]
-        , CAST([Target] AS DECIMAL(30,2)) [Target]
-    FROM [BranchTargetByYear] 
+		[Year]
+        , SUM(CAST([Target] AS FLOAT)) [Target]
+	FROM [DWH-AppData].[dbo].[BMD.FlexTarget]
 	WHERE [Year] BETWEEN YEAR(@Since) AND YEAR(@Date)
         AND [Measure] = 'Interest Income'
+	GROUP BY [Year]
 )
 
 , [ValueAllBranchesByDate] AS (
 	SELECT
-		[rln0019].[date] [Date]
-		, [relationship].[branch_id] [BranchID]
-		, SUM([rln0019].[interest]) [Actual]
+		DATETIMEFROMPARTS(YEAR([rln0019].[date]),12,31,0,0,0,0) [Date]
+		, SUM(CASE WHEN [BadDebt].[SoTaiKhoan] IS NULL THEN [rln0019].[interest] ELSE 0 END) [Actual]
 	FROM [rln0019]
 	LEFT JOIN [relationship]
 		ON [relationship].[date] = [rln0019].[date]
 		AND [relationship].[sub_account] = [rln0019].[sub_account]
+	LEFT JOIN [BadDebt]
+		ON [BadDebt].[SoTaiKhoan] = [relationship].[account_code]
+		AND [BadDebt].[Ngay] = CONVERT(VARCHAR(7), DATEADD(MONTH, -1, [rln0019].[date]), 126)
 	WHERE [rln0019].[date] BETWEEN @Since AND @Date
-	GROUP BY [relationship].[branch_id], [rln0019].[date]
+		AND [relationship].[branch_id] IN (SELECT [BranchID] FROM [BranchList])
+	GROUP BY DATETIMEFROMPARTS(YEAR([rln0019].[date]),12,31,0,0,0,0)
 )
 
-, [RawResult] AS (
-	SELECT
-		DATETIMEFROMPARTS([YearlyTargetByBranch].[Year],12,31,0,0,0,0) [Date]
-		, [YearlyTargetByBranch].[BranchID]
-		, ISNULL(SUM([ValueAllBranchesByDate].[Actual]),0) [Actual]
-		, MAX([YearlyTargetByBranch].[Target]) [Target]
-	FROM [YearlyTargetByBranch]
-	LEFT JOIN [ValueAllBranchesByDate]
-		ON [YearlyTargetByBranch].[Year] = YEAR([ValueAllBranchesByDate].[Date])
-		AND [YearlyTargetByBranch].[BranchID] = [ValueAllBranchesByDate].[BranchID]
-	GROUP BY [YearlyTargetByBranch].[BranchID], DATETIMEFROMPARTS([YearlyTargetByBranch].[Year],12,31,0,0,0,0)
-)
-
-SELECT 
-	[Date]
-	, SUM(ISNULL([RawResult].[Actual],0)) [Actual]
-	, SUM(ISNULL([RawResult].[Target],0)) [Target]
-FROM [RawResult]
-GROUP BY [Date]
+SELECT
+	[ValueAllBranchesByDate].[Date]
+	, [ValueAllBranchesByDate].[Actual]
+	, [YearlyTarget].[Target]
+FROM [YearlyTarget]
+LEFT JOIN [ValueAllBranchesByDate]
+	ON YEAR([ValueAllBranchesByDate].[Date]) = [YearlyTarget].[Year]
 ORDER BY 1
 
 

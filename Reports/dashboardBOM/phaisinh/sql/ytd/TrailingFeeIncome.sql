@@ -23,8 +23,8 @@ WITH
 , [YearlyTarget] AS (
     SELECT 
 		[Year]
-        , CAST(SUM([Target]) AS DECIMAL(30,2)) [Target]
-    FROM [BranchTargetByYear] 
+        , CAST(SUM(CAST([Target] AS FLOAT)) AS DECIMAL(30,8)) [Target]
+    FROM [DWH-AppData].[dbo].[BMD.FDSTarget]
 	WHERE [Year] BETWEEN YEAR(@Since) AND YEAR(@Date)
         AND [Measure] = 'Fee Income'
 	GROUP BY [Year]
@@ -43,7 +43,7 @@ WITH
 , [ValueAllBranchesByDate] AS (
 	SELECT
 		DATETIMEFROMPARTS(YEAR([RRE0018].[Ngay]),12,31,0,0,0,0) [Date]
-		, ISNULL(SUM([RRE0018].[TongPhiGiaoDich]), 0) [Value]
+		, ISNULL(SUM([RRE0018].[PhiGiaoDichPHSThu]), 0) [Value]
 	FROM [RRE0018]
 	LEFT JOIN [Rel]
         ON [Rel].[AccountCode] = [RRE0018].[SoTaiKhoan]

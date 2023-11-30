@@ -7,11 +7,14 @@ import matplotlib.dates as mdates
 import matplotlib.image as image
 import mplcyberpunk
 import warnings
+
 from abc import ABC, abstractmethod
 from PIL import Image
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 from color import Color
+
+plt.ioff()
 warnings.filterwarnings('ignore')
 
 
@@ -247,9 +250,9 @@ class TrailingBars(_Chart):
         elif max(verticalValues) > 1e5:
             verticalLabels = ['{:,.1f}M'.format(y / 1e6) for y in verticalValues]
         elif 0 < max(verticalValues) < 1:
-            verticalLabels = ['{:.1f}%'.format(y * 100) for y in verticalValues]
+            verticalLabels = ['{:.3f}%'.format(y * 100) for y in verticalValues]
         else:
-            verticalLabels = ['{:,.0f}'.format(y) for y in verticalValues]
+            verticalLabels = ['{:,.3f}'.format(y) for y in verticalValues]
         plt.yticks(verticalValues, verticalLabels, fontsize=13)
 
         # Horizontal gridlines
@@ -271,17 +274,16 @@ class TrailingBars(_Chart):
         # minActual = self.data['Actual'].min()
         maxTarget = self.data['Target'].max()
         maxActual = self.data['Actual'].max()
-
         actualData = self.data['Actual'].reset_index(drop=True)
 
         if self.data['Target'].max() > 1e9:
-            stringFormat = '{:,.2f}B'
+            stringFormat = '{:,.1f}B'
             dividor = 1e9
         elif self.data['Target'].max() > 1e5:
             stringFormat = '{:,.1f}M'
             dividor = 1e6
         elif self.data['Target'].max() < 1:
-            stringFormat = '{:.2f}%'
+            stringFormat = '{:.3f}%'
             dividor = 1 / 100
         else:
             stringFormat = '{:,.0f}'
@@ -402,7 +404,7 @@ class InfoTag(_Chart):
         else:  # CoSo
             faceColor = Color.MEDIUMBLUE
         fig = plt.figure(
-            figsize=(3.5, 10.5 / 4),
+            figsize=(5.5, 14.5 / 4),
             facecolor=faceColor
         )
         ax = fig.add_subplot()
@@ -418,24 +420,24 @@ class InfoTag(_Chart):
         data = self.data.squeeze()
         if 'MarketShare' in data.index:
             tagTitle = 'Market Share'
-            absoluteValueString = r'{:,.2f}%'.format(data['MarketShare'] * 100)
-            absoluteChangeString = r'{:+,.2f}%'.format(data['AbsoluteChange'] * 100)
-            relativeChangeString = r'{:+,.2f}%'.format(data['RelativeChange'])
+            absoluteValueString = r'{:,.3f}%'.format(data['MarketShare'] * 100)
+            absoluteChangeString = r'{:+,.3f}%'.format(data['AbsoluteChange'] * 100)
+            relativeChangeString = r'{:+,.3f}%'.format(data['RelativeChange'] * 100)
         elif 'FeeIncome' in data.index:
             tagTitle = 'Trading Fee'
             absoluteValueString = r'{:,.1f} M'.format(data['FeeIncome'] / 1e6)
             absoluteChangeString = r'{:+,.1f} M'.format(data['AbsoluteChange'] / 1e6)
-            relativeChangeString = r'{:+,.2f}%'.format(data['RelativeChange'])
+            relativeChangeString = r'{:+,.3f}%'.format(data['RelativeChange'] * 100)
         elif 'InterestIncome' in data.index:
             tagTitle = 'Margin Income'
             absoluteValueString = r'{:,.1f} M'.format(data['InterestIncome'] / 1e6)
             absoluteChangeString = r'{:+,.1f} M'.format(data['AbsoluteChange'] / 1e6)
-            relativeChangeString = r'{:+,.2f}%'.format(data['RelativeChange'])
+            relativeChangeString = r'{:+,.3f}%'.format(data['RelativeChange'] * 100)
         elif 'NewAccounts' in data.index:
             tagTitle = 'New accounts'
             absoluteValueString = r'{:,.0f}'.format(data['NewAccounts'])
             absoluteChangeString = r'{:+,.0f}'.format(data['AbsoluteChange'])
-            relativeChangeString = r'{:+,.2f}%'.format(data['RelativeChange'])
+            relativeChangeString = r'{:+,.3f}%'.format(data['RelativeChange'] * 100)
         else:
             raise ValueError("Invalid Measure")
 
@@ -612,14 +614,14 @@ class Donut(_Chart):
         def getStringValue(x):
             if x == 0:
                 return ''
-            if x < 1:  # phần trăm
+            elif x < 1:  # phần trăm
                 return '{:.3f}%'.format(x * 100)
-            if x > 1e9:
-                return '{:,.1f}B'.format(x / 1e9)
-            if x > 1e5:
-                return '{:,.1f}M'.format(x / 1e6)
+            elif x > 1e9:
+                return '{:,.1f} B'.format(x / 1e9)
+            elif x > 1e5:
+                return '{:,.1f} M'.format(x / 1e6)
             else:
-                return '{:,.0f}'.format(x)
+                return '{:,.3f}'.format(x)
 
         labels = ['{} ({}%)'.format(getStringValue(round(i, 5)), percentage(i)) for i in self.data['Value']]
         wedges, texts = ax.pie(
@@ -648,9 +650,8 @@ class Donut(_Chart):
                 horizontalalignment=horizontalAlignment,
                 **kw
             )
-
         plt.legend(
-            [self.mapBranch.get(branchID) + f' - (Rank {idx + 1})' for idx, branchID in enumerate(self.data['BranchID'])],
+            [self.mapBranch.get(self.data.loc[idx, 'BranchID']) + f" - Rank {self.data.loc[idx, 'Rank']}" for idx in self.data.index],
             loc="upper left",
             bbox_to_anchor=(0.88, 0.75),
             prop={'size': 12},
@@ -677,7 +678,7 @@ class StalkedBar(_Chart):
             'text.color': Color.WHITE,
             'axes.labelcolor': Color.WHITE,
         })
-        self.data[['STAFF', 'INTERMEDIARY']] = self.data[['STAFF', 'INTERMEDIARY']].apply(pd.to_numeric)
+        self.data[['Staff', 'Intermediary']] = self.data[['Staff', 'Intermediary']].apply(pd.to_numeric)
         df = self.data.set_index('Date')
         df.index.name = None
         # vẽ

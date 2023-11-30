@@ -1,4 +1,4 @@
-/*YTD*/
+﻿/*YTD*/
 
 /*Total branches - Interest Income*/
 
@@ -14,6 +14,22 @@ SET @FirstDateOfYear = (SELECT DATETIMEFROMPARTS(YEAR(@Date),1,1,0,0,0,0));
 WITH
 
 [Branch] AS (
+    SELECT DISTINCT [BranchID]
+	FROM [BranchTargetByYear]
+	WHERE [Year] = YEAR(@Date)
+)
+
+, [BadDebt] AS (
+	SELECT 
+		CONVERT(VARCHAR(7), [Ngay], 126) [Ngay]
+		, [SoTaiKhoan]
+	FROM [BadDebtAccounts]
+	WHERE [Ngay] BETWEEN DATEADD(MONTH, -1, @FirstDateOfYear) AND @Date
+		AND [LoaiNo] NOT IN (N'Hết nợ', N'TK đã đóng')
+)
+
+
+, [TargetByBranch] AS (
     SELECT [BranchID]
     FROM [BranchTargetByYear]
     WHERE [Measure] = 'Interest Income'
@@ -23,12 +39,16 @@ WITH
 , [ValueTotalBranches] AS (
 	SELECT 
 		[relationship].[branch_id] [BranchID]
-		, SUM([rln0019].[interest]) [InterestIncome]
+		, SUM(CASE WHEN [BadDebt].[SoTaiKhoan] IS NULL THEN [rln0019].[interest] ELSE 0 END) [InterestIncome]
 	FROM [rln0019]
 	LEFT JOIN [relationship]
 		ON [rln0019].[date] = [relationship].[date]
 		AND [rln0019].[sub_account] = [relationship].[sub_account]
+	LEFT JOIN [BadDebt]
+		ON [BadDebt].[SoTaiKhoan] = [relationship].[account_code]
+		AND [BadDebt].[Ngay] = CONVERT(VARCHAR(7), DATEADD(MONTH, -1, [rln0019].[date]), 126)
 	WHERE [rln0019].[date] BETWEEN @FirstDateOfYear AND @Date
+		AND [relationship].[branch_id] IN (SELECT [BranchID] FROM [TargetByBranch])
 	GROUP BY [relationship].[branch_id]
 )
 
@@ -43,13 +63,15 @@ WITH
 	FROM [ValueTotalBranches]
 )
 
-SELECT	
-	[Branch].[BranchID],
-	ISNULL([InterestIncome], 0) [Value]
+SELECT
+	RANK() OVER(ORDER BY ISNULL([InterestIncome], 0) DESC) [Rank]
+	, [Branch].[BranchID]
+	, ISNULL([InterestIncome], 0) [Value]
 	, ISNULL([Contribution], 0) [Contribution]
 FROM [Branch]
 LEFT JOIN [Contribution]
 	ON [Contribution].[BranchID] = [Branch].[BranchID]
+ORDER BY 1
 
 
 END

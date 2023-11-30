@@ -1,4 +1,4 @@
-/*YTD*/
+﻿/*YTD - BOM - CoSo*/
 
 /*Total branches - Market share*/
 
@@ -14,16 +14,22 @@ SET @FirstDateOfYear = (SELECT DATETIMEFROMPARTS(YEAR(@Date),1,1,0,0,0,0));
 DECLARE @MarketTradingValue DECIMAL(30,2);
 SET @MarketTradingValue = (
 	SELECT
-		SUM([TongGiaTriGiaoDich]) [TradingValue]
-	FROM [DWH-ThiTruong].[dbo].[KetQuaGiaoDichCoSoVietStock]
-	WHERE [San] IN ('HNX','HOSE')
-		AND [Ngay] BETWEEN @FirstDateOfYear AND @Date
+		CAST(SUM([MATCHVALUE]) AS DECIMAL(30,8)) [TradingValue]
+	FROM [Flex_MarketInfo]
+	WHERE [TRADEPLACE] IN ('HNX','HOSE')
+		AND [TXDATE] BETWEEN @FirstDateOfYear AND @Date
 );
 
 WITH
 
 [Branch] AS (
-	SELECT [BranchID]
+    SELECT DISTINCT [BranchID]
+	FROM [BranchTargetByYear]
+	WHERE [Year] = YEAR(@Date)
+)
+
+, [TargetByBranch] AS (
+    SELECT [BranchID]
     FROM [BranchTargetByYear]
     WHERE [Measure] = 'Market Share'
         AND [Year] = YEAR(@Date)
@@ -32,12 +38,15 @@ WITH
 , [ValueTotalBranches] AS (
 	SELECT
 		[relationship].[branch_id] [BranchID]
-		, SUM([trading_record].[value]) / @MarketTradingValue / 2 [MarketShare]
+		, CAST(CAST(SUM([trading_record].[value]) AS DECIMAL(30,8)) / @MarketTradingValue / 2 AS DECIMAL(30,8)) [MarketShare]
 	FROM [trading_record]
 	LEFT JOIN [relationship]
 		ON [relationship].[sub_account] = [trading_record].[sub_account]
 		AND [relationship].[date] = [trading_record].[date]
 	WHERE [trading_record].[date] BETWEEN @FirstDateOfYear AND @Date
+		AND [relationship].[branch_id] IN (SELECT [BranchID] FROM [TargetByBranch])
+		AND [trading_record].[type_of_asset] NOT IN (N'Trái phiếu doanh nghiệp', N'Trái phiếu', N'Trái phiếu chính phủ')
+		AND [relationship].[account_code] NOT LIKE '022P%'
 	GROUP BY [relationship].[branch_id]
 )
 
@@ -52,13 +61,15 @@ WITH
 	FROM [ValueTotalBranches]
 )
 
-SELECT 
-	[Branch].[BranchID]
+SELECT
+	RANK() OVER(ORDER BY ISNULL([MarketShare], 0) DESC) [Rank]
+	, [Branch].[BranchID]
 	, ISNULL([MarketShare], 0) [Value]
 	, ISNULL([Contribution], 0) [Contribution]
 FROM [Branch]
 LEFT JOIN [Contribution]
-    ON [Contribution].[BranchID] = [Branch].[BranchID]
+	ON [Contribution].[BranchID] = [Branch].[BranchID]
+ORDER BY 1
 
 
 END

@@ -1,6 +1,6 @@
-﻿/*Daily*/
+﻿/*Daily - BOM - CoSo*/
 
-/*Headline Tag - Interest Income (Phần trăm hoàn thành chỉ tiêu ngày - Lãi vay ký quỹ) */
+/*Headline Tag - Interest Income*/
 
 BEGIN
 
@@ -23,7 +23,16 @@ SET @Prev = (
 
 WITH
 
-[BranchTarget] AS (
+[BadDebt] AS (
+	SELECT 
+		CONVERT(VARCHAR(7), [Ngay], 126) [Ngay]
+		, [SoTaiKhoan]
+	FROM [BadDebtAccounts]
+	WHERE [Ngay] BETWEEN DATEADD(MONTH, -1, @Prev) AND @Date
+		AND [LoaiNo] NOT IN (N'Hết nợ', N'TK đã đóng')
+)
+
+, [TargetByBranch] AS (
 	SELECT
 		[BranchID]
 	FROM [BranchTargetByYear]
@@ -31,51 +40,43 @@ WITH
 		AND [Measure] = 'Interest Income'
 )
 
-, [PrevValueByBranch] AS (
+, [PrevValue] AS (
 	SELECT
-		[relationship].[branch_id] [BranchID],
-		SUM([rln0019].[interest]) [InterestIncome]
+		 SUM(CASE WHEN [BadDebt].[SoTaiKhoan] IS NULL THEN [rln0019].[interest] ELSE 0 END) [InterestIncome]
 	FROM [rln0019]
 	LEFT JOIN [relationship]
 		ON [relationship].[sub_account] = [rln0019].[sub_account]
 		AND [relationship].[date] = [rln0019].[date]
+	LEFT JOIN [BadDebt]
+		ON [BadDebt].[SoTaiKhoan] = [relationship].[account_code]
+		AND [BadDebt].[Ngay] = CONVERT(VARCHAR(7), DATEADD(MONTH, -1, [rln0019].[date]), 126)
 	WHERE [rln0019].[date] = @Prev
-	GROUP BY [relationship].[branch_id]
+		AND [relationship].[branch_id] IN (SELECT [BranchID] FROM [TargetByBranch])
 )
 
-, [TodayValueByBranch] AS (
+, [TodayValue] AS (
 	SELECT
-		[relationship].[branch_id] [BranchID],
-		SUM([rln0019].[interest]) [InterestIncome]
+		SUM(CASE WHEN [BadDebt].[SoTaiKhoan] IS NULL THEN [rln0019].[interest] ELSE 0 END) [InterestIncome]
 	FROM [rln0019]
 	LEFT JOIN [relationship]
 		ON [relationship].[sub_account] = [rln0019].[sub_account]
 		AND [relationship].[date] = [rln0019].[date]
+	LEFT JOIN [BadDebt]
+		ON [BadDebt].[SoTaiKhoan] = [relationship].[account_code]
+		AND [BadDebt].[Ngay] = CONVERT(VARCHAR(7), DATEADD(MONTH, -1, [rln0019].[date]), 126)
 	WHERE [rln0019].[date] = @Date
-	GROUP BY [relationship].[branch_id]
-)
-
-, [result] AS (
-	SELECT
-		[BranchTarget].[BranchID]
-		, ISNULL([TodayValueByBranch].[InterestIncome],0) [InterestIncome]
-		, ISNULL([TodayValueByBranch].[InterestIncome],0) - ISNULL([PrevValueByBranch].[InterestIncome],0) [AbsoluteChange]
-		, CASE 
-			WHEN ISNULL([PrevValueByBranch].[InterestIncome],0) = 0 THEN 0
-			ELSE ISNULL([TodayValueByBranch].[InterestIncome],0) / [PrevValueByBranch].[InterestIncome] - 1
-		END [RelativeChange]
-	FROM [BranchTarget]
-	LEFT JOIN [PrevValueByBranch]
-		ON [BranchTarget].[BranchID] = [PrevValueByBranch].[BranchID]
-	LEFT JOIN [TodayValueByBranch]
-		ON [BranchTarget].[BranchID] = [TodayValueByBranch].[BranchID]
+		AND [relationship].[branch_id] IN (SELECT [BranchID] FROM [TargetByBranch])
 )
 
 SELECT
-	SUM([InterestIncome]) [InterestIncome],
-	SUM([AbsoluteChange]) [AbsoluteChange],
-	SUM([RelativeChange]) [RelativeChange]
-FROM [result]
+	[TodayValue].[InterestIncome] [InterestIncome]
+	, [TodayValue].[InterestIncome] - [PrevValue].[InterestIncome] [AbsoluteChange]
+	, CASE 
+		WHEN [PrevValue].[InterestIncome] = 0 THEN 0
+		ELSE [TodayValue].[InterestIncome] / [PrevValue].[InterestIncome] - 1
+	END [RelativeChange]
+FROM [PrevValue]
+CROSS JOIN [TodayValue]
 
 
 END

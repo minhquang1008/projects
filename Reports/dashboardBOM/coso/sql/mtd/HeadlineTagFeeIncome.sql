@@ -1,6 +1,6 @@
-﻿/*MTD*/
+﻿/*MTD - BOM - CoSo*/
 
-/* Headline Tag - Fee Income (Phần trăm hoàn thành chỉ tiêu tháng - Phí giao dịch) */
+/*Headline Tag - Fee Income (Phần trăm hoàn thành chỉ tiêu tháng - Phí giao dịch)*/
 
 BEGIN
 
@@ -22,7 +22,7 @@ SET @FirstDateOfMonthOfPreviousYear = (SELECT DATETIMEFROMPARTS(YEAR(@DateOfPrev
 
 WITH 
 
-[BranchTarget] AS (
+[TargetByBranch] AS (
 	SELECT
 		[BranchID]
 	FROM [BranchTargetByYear]
@@ -30,51 +30,41 @@ WITH
 		AND [Measure] = 'Fee Income'
 )
 
-, [ValueByBranchOfPreviousPeriod] AS (
+, [PrevValuePeriod] AS (
 	SELECT
-		[relationship].[branch_id] [BranchID]
-		, SUM([trading_record].[fee]) [FeeIncome]
+		SUM([trading_record].[fee]) [FeeIncome]
 	FROM [trading_record]
 	LEFT JOIN [relationship]
 		ON [relationship].[sub_account] = [trading_record].[sub_account]
 		AND [relationship].[date] = [trading_record].[date]
 	WHERE [trading_record].[date] BETWEEN @FirstDateOfMonthOfPreviousYear AND @DateOfPreviousYear
-	GROUP BY [relationship].[branch_id]
+		AND [relationship].[branch_id] IN (SELECT [BranchID] FROM [TargetByBranch])
+		AND [trading_record].[type_of_asset] NOT IN (N'Trái phiếu doanh nghiệp', N'Trái phiếu', N'Trái phiếu chính phủ')
+		AND [relationship].[account_code] NOT LIKE '022P%'
 )
 
-, [ValueByBranchOfCurrentPeriod] AS (
+, [CurrentValuePeriod] AS (
 	SELECT
-		[relationship].[branch_id] [BranchID]
-		, SUM([trading_record].[fee]) [FeeIncome]
+		SUM([trading_record].[fee]) [FeeIncome]
 	FROM [trading_record]
 	LEFT JOIN [relationship]
 		ON [relationship].[sub_account] = [trading_record].[sub_account]
 		AND [relationship].[date] = [trading_record].[date]
 	WHERE [trading_record].[date] BETWEEN @FirstDateOfMonthOfCurrentYear AND @Date
-	GROUP BY [relationship].[branch_id]
-)
-
-, [result] AS (
-	SELECT
-		[BranchTarget].[BranchID]
-		, ISNULL([ValueByBranchOfCurrentPeriod].[FeeInCome],0) [FeeIncome]
-		, ISNULL([ValueByBranchOfCurrentPeriod].[FeeInCome],0) - ISNULL([ValueByBranchOfPreviousPeriod].[FeeInCome],0) [AbsoluteChange]
-		, CASE 
-			WHEN ISNULL([ValueByBranchOfPreviousPeriod].[FeeInCome],0) = 0 THEN 0
-			ELSE ISNULL([ValueByBranchOfCurrentPeriod].[FeeInCome],0) / [ValueByBranchOfPreviousPeriod].[FeeInCome] - 1
-		END [RelativeChange]
-	FROM [BranchTarget]
-	LEFT JOIN [ValueByBranchOfPreviousPeriod]
-		ON [BranchTarget].[BranchID] = [ValueByBranchOfPreviousPeriod].[BranchID]
-	LEFT JOIN [ValueByBranchOfCurrentPeriod]
-		ON [BranchTarget].[BranchID] = [ValueByBranchOfCurrentPeriod].[BranchID]
+		AND [relationship].[branch_id] IN (SELECT [BranchID] FROM [TargetByBranch])
+		AND [trading_record].[type_of_asset] NOT IN (N'Trái phiếu doanh nghiệp', N'Trái phiếu', N'Trái phiếu chính phủ')
+		AND [relationship].[account_code] NOT LIKE '022P%'
 )
 
 SELECT
-	SUM([FeeIncome]) [FeeIncome]
-	, SUM([AbsoluteChange]) [AbsoluteChange]
-	, SUM([RelativeChange]) [RelativeChange]
-FROM [result]
+	[CurrentValuePeriod].[FeeInCome] [FeeIncome]
+	, [CurrentValuePeriod].[FeeInCome] - [PrevValuePeriod].[FeeInCome] [AbsoluteChange]
+	, CASE 
+		WHEN [PrevValuePeriod].[FeeInCome] = 0 THEN 0
+		ELSE [CurrentValuePeriod].[FeeInCome] / [PrevValuePeriod].[FeeInCome] - 1
+	END [RelativeChange]
+FROM [PrevValuePeriod]
+CROSS JOIN [CurrentValuePeriod]
 
 
 END

@@ -11,14 +11,20 @@ SET @Date = @YYYYMMDD;
 DECLARE @TodayTotalContracts DECIMAL(30,2);
 SET @TodayTotalContracts = (
 	SELECT
-		SUM(ISNULL([KhoiLuongKhopLenh],0) + ISNULL([KhoiLuongThoaThuan],0)) [TotalContracts]
-	FROM [DWH-ThiTruong].[dbo].[KetQuaGiaoDichPhaiSinhVietStock]
-	WHERE [Ngay] = @Date
+		SUM(ISNULL([FDS_MarketInfo].[MkTradingVol],0)) [TotalContracts]
+	FROM [DWH-CoSo].[dbo].[FDS_MarketInfo]
+	WHERE [Txdate] = @Date
 );
 
 WITH
 
-[TargetByBranch] AS (
+[Branch] AS (
+    SELECT DISTINCT [BranchID]
+	FROM [BranchTargetByYear]
+	WHERE [Year] = YEAR(@Date)
+)
+
+, [TargetByBranch] AS (
     SELECT [BranchID]
     FROM [BranchTargetByYear]
     WHERE [Measure] = 'Fee Income'
@@ -42,7 +48,6 @@ WITH
     LEFT JOIN [Rel]
         ON [RRE0018].[SoTaiKhoan] = [Rel].[AccountCode]
     WHERE [RRE0018].[Ngay] = @Date
-		AND [Rel].[BranchID] IN (SELECT [BranchID] FROM [TargetByBranch])
 	GROUP BY [Rel].[BranchID]
 )
 
@@ -57,12 +62,15 @@ WITH
 	FROM [ValueTotalBranches]
 )
 
-SELECT 
-	[Contribution].[BranchID],
-	ISNULL([MarketShare], 0) [Value]
+SELECT
+	RANK() OVER(ORDER BY ISNULL([MarketShare], 0) DESC) [Rank]
+	, [Branch].[BranchID]
+	, ISNULL([MarketShare], 0) [Value]
 	, ISNULL([Contribution], 0) [Contribution]
-FROM [Contribution]
-ORDER BY 2 DESC
+FROM [Branch]
+LEFT JOIN [Contribution]
+	ON [Contribution].[BranchID] = [Branch].[BranchID]
+ORDER BY 1
 
 
 END

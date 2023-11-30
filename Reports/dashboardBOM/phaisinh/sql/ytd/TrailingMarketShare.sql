@@ -16,11 +16,11 @@ WITH
 
 [MarketTradingValue] AS (
 	SELECT
-		DATETIMEFROMPARTS(YEAR([Ngay]),12,31,0,0,0,0) [Date]
-		, SUM(ISNULL([KhoiLuongKhopLenh],0) + ISNULL([KhoiLuongThoaThuan],0)) [TotalContracts]
-	FROM [DWH-ThiTruong].[dbo].[KetQuaGiaoDichPhaiSinhVietStock]
-	WHERE [Ngay] BETWEEN @Since AND @Date 
-	GROUP BY DATETIMEFROMPARTS(YEAR([Ngay]),12,31,0,0,0,0)
+		DATETIMEFROMPARTS(YEAR([Txdate]),12,31,0,0,0,0) [Date]
+		, SUM(ISNULL([FDS_MarketInfo].[MkTradingVol],0)) [TotalContracts]
+	FROM [DWH-CoSo].[dbo].[FDS_MarketInfo]
+	WHERE [Txdate] BETWEEN @Since AND @Date 
+	GROUP BY DATETIMEFROMPARTS(YEAR([Txdate]),12,31,0,0,0,0)
 )
 
 , [BranchList] AS (
@@ -33,8 +33,8 @@ WITH
 , [YearlyTarget] AS (
    SELECT 
         [Year]
-        , CAST(SUM([Target]) AS DECIMAL(20,7)) [Target]
-    FROM [BranchTargetByYear] 
+        , CAST(SUM(CAST([Target] AS FLOAT)) AS DECIMAL(30,8)) [Target]
+    FROM [DWH-AppData].[dbo].[BMD.FDSTarget]
 	WHERE [Year] BETWEEN YEAR(@Since) AND YEAR(@Date)
         AND [Measure] = 'Market Share'
 	GROUP BY [Year]

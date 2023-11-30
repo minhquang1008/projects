@@ -1,4 +1,4 @@
-﻿/*Daily*/
+﻿/*Daily - BOM - CoSo*/
 
 /*Fluctuation - Interest Income (Biến động lãi vay ký quỹ) */
 
@@ -18,10 +18,18 @@ SET @Since = (
 	) [z] WHERE [No] = 180
 );
 
-
 WITH
 
-[BranchTarget] AS (
+[BadDebt] AS (
+	SELECT 
+		CONVERT(VARCHAR(7), [Ngay], 126) [Ngay]
+		, [SoTaiKhoan]
+	FROM [BadDebtAccounts]
+	WHERE [Ngay] BETWEEN DATEADD(MONTH, -1, @Since) AND @Date
+		AND [LoaiNo] NOT IN (N'Hết nợ', N'TK đã đóng')
+)
+
+, [TargetByBranch] AS (
 	SELECT
 		[BranchID]
 	FROM [BranchTargetByYear]
@@ -40,31 +48,33 @@ WITH
 , [Index] AS (
 	SELECT 
 		[WorkDays].[Date]
-		, [BranchTarget].[BranchID]
-	FROM [BranchTarget] CROSS JOIN [WorkDays]
+		, [TargetByBranch].[BranchID]
+	FROM [TargetByBranch] CROSS JOIN [WorkDays]
 )
 
-, [ValueByBranchByDate] AS (
+, [RawResult] AS (
 	SELECT
 		[rln0019].[date] [Date]
 		, [relationship].[branch_id] [BranchID]
-		, SUM([rln0019].[interest]) [InterestIncome]
+		, SUM(CASE WHEN [BadDebt].[SoTaiKhoan] IS NULL THEN [rln0019].[interest] ELSE 0 END) [InterestIncome]
 	FROM [rln0019]
 	LEFT JOIN [relationship]
-		ON [rln0019].[date] = [relationship].[date]
+		ON [relationship].[date] = [rln0019].[Date]
 		AND [rln0019].[sub_account] = [relationship].[sub_account]
+	LEFT JOIN [BadDebt]
+		ON [BadDebt].[SoTaiKhoan] = [relationship].[account_code]
+		AND [BadDebt].[Ngay] = CONVERT(VARCHAR(7), DATEADD(MONTH, -1, [rln0019].[date]), 126)
 	WHERE [rln0019].[date] BETWEEN @Since AND @Date
 	GROUP BY [relationship].[branch_id], [rln0019].[date]
 )
 
 SELECT
 	[Index].[Date]
-	, ISNULL(SUM([ValueByBranchByDate].[InterestIncome]),0) [Value]
+	, ISNULL(SUM([RawResult].[InterestIncome]), 0) [Value]
 FROM [Index]
-LEFT JOIN [ValueByBranchByDate]
-	ON [Index].[Date] = [ValueByBranchByDate].[Date]
-	AND [Index].[BranchID] = [ValueByBranchByDate].[BranchID]
-
+LEFT JOIN [RawResult]
+	ON [RawResult].[Date] = [Index].[Date]
+	AND [RawResult].[BranchID] = [Index].[BranchID]
 GROUP BY [Index].[Date]
 ORDER BY [Index].[Date]
 

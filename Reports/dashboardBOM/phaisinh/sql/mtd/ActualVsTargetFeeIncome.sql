@@ -16,8 +16,8 @@ WITH
 [TargetByBranch] AS (
     SELECT 
         [BranchID] 
-        , CAST([Target] / 12 AS DECIMAL(15,2)) [FeeIncome]
-    FROM [BranchTargetByYear] 
+        , CAST(CAST([Target] AS FLOAT) / 12 AS DECIMAL(30,8)) [FeeIncome]
+    FROM [DWH-AppData].[dbo].[BMD.FDSTarget]
     WHERE [Year] = YEAR(@Date)
         AND [Measure] = 'Fee Income'
 )
@@ -51,6 +51,7 @@ SELECT
 FROM [TargetByBranch]
 LEFT JOIN [BranchActual]
     ON [TargetByBranch].[BranchID] = [BranchActual].[BranchID]
+ORDER BY 1
 
 
 END

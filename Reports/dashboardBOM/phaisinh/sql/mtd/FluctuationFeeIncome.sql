@@ -14,8 +14,7 @@ SET @Since = DATEADD(DAY,1,EOMONTH(DATEADD(YEAR,-1,@Date)));
 WITH
 
 [TargetByBranch] AS (
-	SELECT
-		[BranchID]
+	SELECT [BranchID]
 	FROM [BranchTargetByYear]
 	WHERE [Year] = YEAR(@Date)
 		AND [Measure] = 'Fee Income'

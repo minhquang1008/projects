@@ -22,7 +22,7 @@ SET @FirstDateOfPreviousYear = (SELECT DATETIMEFROMPARTS(YEAR(@DateOfPreviousYea
 
 WITH
 
-[BranchTarget] AS (
+[TargetByBranch] AS (
 	SELECT
 		[BranchID]
 	FROM [BranchTargetByYear]
@@ -30,65 +30,86 @@ WITH
 		AND [Measure] = 'New Accounts'
 )
 
-, [Rel] AS (
+, [RRE0386.Flex] AS (
+	SELECT
+		[AUTOID]
+		, MIN([AUTOID]) OVER (PARTITION BY [SoTaiKhoan], [NgayMoTK]) [MinID]
+		, [NgayMoTK]
+		, [SoTaiKhoan]
+		, [IDNhanVienMoTK]
+	FROM [RRE0386]
+	WHERE (
+		([RRE0386].[NgayMoTK] BETWEEN @FirstDateOfPreviousYear AND @DateOfPreviousYear)
+		OR ([RRE0386].[NgayMoTK] BETWEEN @FirstDateOfCurrentYear AND @Date)
+	)
+	AND [RRE0386].[IDNhanVienHienTai] IS NOT NULL
+)
+
+, [FindLastBranchID] AS (
 	SELECT DISTINCT
-		[date] [Date]
-		, [branch_id] [BranchID]
-		, [broker_id] [BrokerID]
-		, [account_code] [AccountCode]
+		[relationship].[date]
+		, [relationship].[account_code] [SoTaiKhoan]
+		, [broker_id]
+		, LAST_VALUE([branch_id]) OVER(PARTITION BY [account_code], [broker_id] ORDER BY [account_code]) [branch_id]
 	FROM [relationship]
-	WHERE ([date] BETWEEN @FirstDateOfPreviousYear AND @DateOfPreviousYear)
+	WHERE (
+		([date] BETWEEN @FirstDateOfPreviousYear AND @DateOfPreviousYear)
 		OR ([date] BETWEEN @FirstDateOfCurrentYear AND @Date)
+	)
+	AND [relationship].[account_code] IN (SELECT [SoTaiKhoan] FROM [RRE0386.Flex])
 )
 
-, [ValueByBranchOfPreviousPeriod] AS (
+, [Rel] AS (
 	SELECT
-		[Rel].[BranchID]
-		, COUNT(*) [NewAccounts]
-	FROM [customer_change]
-	LEFT JOIN [Rel]
-		ON [Rel].[AccountCode] = [customer_change].[account_code]
-		AND [Rel].[Date] = [customer_change].[open_date]
-	WHERE [customer_change].[open_date] BETWEEN @FirstDateOfPreviousYear AND @DateOfPreviousYear
-		AND [customer_change].[open_or_close] = 'Mo'
-		AND [Rel].[BrokerID] IS NOT NULL -- không tính các tài khoản chưa duyệt nên chưa có môi giới
-	GROUP BY [Rel].[BranchID]
+		[Date]
+		, [SoTaiKhoan]
+		, CASE
+			WHEN [broker_id] IS NULL AND [date] <> @Date THEN LEAD([branch_id]) OVER (PARTITION BY [SoTaiKhoan] ORDER BY [date])
+			ELSE [branch_id]
+		END [BranchID]
+	FROM [FindLastBranchID]
 )
 
-, [ValueByBranchOfCurrentPeriod] AS (
+, [_RRE0386] AS (
 	SELECT
-		[Rel].[BranchID]
-		, COUNT(*) [NewAccounts]
-	FROM [customer_change]
-	LEFT JOIN [Rel]
-		ON [Rel].[AccountCode] = [customer_change].[account_code]
-		AND [Rel].[date] = [customer_change].[open_date]
-	WHERE [customer_change].[open_date] BETWEEN @FirstDateOfCurrentYear AND @Date
-		AND [customer_change].[open_or_close] = 'Mo'
-		AND [Rel].[BrokerID] IS NOT NULL -- không tính các tài khoản chưa duyệt nên chưa có môi giới
-	GROUP BY [Rel].[BranchID]
+		[NgayMoTK]
+		, [SoTaiKhoan]
+		, [IDNhanVienMoTK]
+	FROM [RRE0386.Flex]
+	WHERE [MinID] = [AUTOID]
 )
 
-, [result] AS (
-	SELECT 
-		[BranchTarget].[BranchID]
-		, ISNULL([ValueByBranchOfCurrentPeriod].[NewAccounts],0) [NewAccounts]
-		, CAST(ISNULL([ValueByBranchOfCurrentPeriod].[NewAccounts],0) AS DECIMAL(10,5)) - CAST(ISNULL([ValueByBranchOfPreviousPeriod].[NewAccounts],0) AS DECIMAL(10,5)) [AbsoluteChange] 
-		, CASE ISNULL([ValueByBranchOfPreviousPeriod].[NewAccounts],0) WHEN 0 THEN 0
-			ELSE CAST(ISNULL([ValueByBranchOfCurrentPeriod].[NewAccounts],0) AS DECIMAL(10,5)) / CAST([ValueByBranchOfPreviousPeriod].[NewAccounts] AS DECIMAL(10,5)) - 1 
-		END [RelativeChange]
-	FROM [BranchTarget]
-	LEFT JOIN [ValueByBranchOfPreviousPeriod]
-		ON [BranchTarget].[BranchID] = [ValueByBranchOfPreviousPeriod].[BranchID]
-	LEFT JOIN [ValueByBranchOfCurrentPeriod]
-		ON [BranchTarget].[BranchID] = [ValueByBranchOfCurrentPeriod].[BranchID]
+, [ValueByPrevPeriod] AS (
+	SELECT
+		COUNT(*) [NewAccounts]
+	FROM [_RRE0386]
+	LEFT JOIN [Rel]
+		ON [Rel].[SoTaiKhoan] = [_RRE0386].[SoTaiKhoan]
+		AND [Rel].[Date] = [_RRE0386].[NgayMoTK]
+	WHERE [Rel].[BranchID] IN (SELECT [BranchID] FROM [BranchTargetByYear] WHERE [Year] = YEAR(@DateOfPreviousYear) AND [Measure] = 'New Accounts')
+		AND [date] BETWEEN @FirstDateOfPreviousYear AND @DateOfPreviousYear
+)
+
+, [ValueCurrentPeriod] AS (
+	SELECT
+		COUNT(*) [NewAccounts]
+	FROM [_RRE0386]
+	LEFT JOIN [Rel]
+		ON [Rel].[SoTaiKhoan] = [_RRE0386].[SoTaiKhoan]
+		AND [Rel].[Date] = [_RRE0386].[NgayMoTK]
+	WHERE [Rel].[BranchID] IN (SELECT [BranchID] FROM [BranchTargetByYear] WHERE [Year] = YEAR(@Date) AND [Measure] = 'New Accounts')
+		AND [date] BETWEEN @FirstDateOfCurrentYear AND @Date
 )
 
 SELECT
-	SUM([NewAccounts]) [NewAccounts],
-	SUM([AbsoluteChange]) [AbsoluteChange],
-	SUM([RelativeChange]) [RelativeChange]
-FROM [result]
+	[ValueCurrentPeriod].[NewAccounts] [NewAccounts]
+	, CAST([ValueCurrentPeriod].[NewAccounts] AS DECIMAL(10,5)) - CAST([ValueByPrevPeriod].[NewAccounts] AS DECIMAL(10,5)) [AbsoluteChange]
+	, CASE [ValueByPrevPeriod].[NewAccounts]
+		WHEN 0 THEN 0
+		ELSE CAST([ValueCurrentPeriod].[NewAccounts] AS DECIMAL(10,5)) / CAST([ValueByPrevPeriod].[NewAccounts] AS DECIMAL(10,5)) - 1
+	END [RelativeChange]
+FROM [ValueByPrevPeriod]
+CROSS JOIN [ValueCurrentPeriod]
 
 
 END

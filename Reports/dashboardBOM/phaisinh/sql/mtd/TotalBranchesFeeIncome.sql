@@ -13,7 +13,13 @@ SET @FirstDateOfMonth = (SELECT DATETIMEFROMPARTS(YEAR(@Date),MONTH(@Date),1,0,0
 
 WITH
 
-[TargetByBranch] AS (
+[Branch] AS (
+    SELECT DISTINCT [BranchID]
+	FROM [BranchTargetByYear]
+	WHERE [Year] = YEAR(@Date)
+)
+
+, [TargetByBranch] AS (
     SELECT [BranchID]
     FROM [BranchTargetByYear]
     WHERE [Measure] = 'Fee Income'
@@ -54,12 +60,15 @@ WITH
 	FROM [ValueTotalBranches]
 )
 
-SELECT 
-	[Contribution].[BranchID],
-	ISNULL([FeeIncome], 0) [Value]
+SELECT
+	RANK() OVER(ORDER BY ISNULL([FeeIncome], 0) DESC) [Rank]
+	, [Branch].[BranchID]
+	, ISNULL([FeeIncome], 0) [Value]
 	, ISNULL([Contribution], 0) [Contribution]
-FROM [Contribution]
-ORDER BY 2 DESC
+FROM [Branch]
+LEFT JOIN [Contribution]
+	ON [Contribution].[BranchID] = [Branch].[BranchID]
+ORDER BY 1
 
 
 END

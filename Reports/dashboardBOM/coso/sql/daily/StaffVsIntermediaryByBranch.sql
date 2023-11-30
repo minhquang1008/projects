@@ -1,4 +1,4 @@
-/*Daily*/
+﻿/*Daily - BOM - CoSo*/
 
 /*Stacked column - Staff vs Intermediary*/
 
@@ -17,45 +17,35 @@ WITH
 	WHERE [Year] = YEAR(@Date)
 )
 
-, [AllBroker] AS (
-	SELECT [brokerid]
-	FROM [brokerlevel] WHERE [date] = @Date
-	UNION ALL
-	SELECT [leadbrokerid]
-	FROM [brokerlevel] WHERE [date] = @Date
-)
-
 , [BrokerList] AS (
-	SELECT DISTINCT 
-		[brokerid] [BrokerID]
-	FROM [AllBroker]
-)
-
-, [BrokerActual] AS (
-	SELECT 
-		[BrokerList].[BrokerID]
-		, [broker].[branch_id] [BranchID]
-		, CASE
-			WHEN ISNUMERIC([brokerid]) = 1 THEN 'STAFF'
-			ELSE 'INTERMEDIARY'
-		END [brokerType]
-	FROM [BrokerList]
-	LEFT JOIN [broker]
-		ON [broker].[broker_id] = [BrokerList].[BrokerID]
-	WHERE
-		[branch_id] IS NOT NULL
+	SELECT DISTINCT
+		[MaCN] [BranchID]
+		, [Ma]
+	FROM [112701]
+	WHERE [Ngay] = @Date
+		AND [CoHieuLuc] = N'Hoạt động'
 		AND (
-			ISNUMERIC(brokerid) = 1
-			OR [brokerid] LIKE 'A%'
+			ISNUMERIC([Ma]) = 1
+			OR [Ma] LIKE 'A%'
 		)
 )
 
-, [ValueBrokerEachBranch] AS (
+, [BrokerType] AS (
 	SELECT
 		[BranchID]
-		, COUNT(CASE WHEN [brokerType] = 'STAFF' THEN 1 ELSE NULL END) [Staff]
+		, CASE
+			WHEN ISNUMERIC([Ma]) = 1 THEN 'STAFF'
+			ELSE 'INTERMEDIARY'
+		END [brokerType]
+	FROM [BrokerList]
+)
+
+, [result] AS (
+	SELECT
+		[BranchID]
+		, COUNT(CASE WHEN [brokerType] = 'STAFF' THEN 1 ELSE NULL END) - 1 [Staff]
 		, COUNT(CASE WHEN [brokerType] = 'INTERMEDIARY' THEN 1 ELSE NULL END) [Intermediary]
-	FROM [BrokerActual]
+	FROM [BrokerType]
 	GROUP BY [BranchID]
 )
 
@@ -64,8 +54,9 @@ SELECT
 	[Staff],
 	[Intermediary]
 FROM [Branch]
-LEFT JOIN [ValueBrokerEachBranch]
-	ON [ValueBrokerEachBranch].[BranchID] = [Branch].[BranchID]
+LEFT JOIN [result]
+	ON [result].[BranchID] = [Branch].[BranchID]
+ORDER BY 1
 
 
 END

@@ -24,8 +24,7 @@ SET @Prev = (
 WITH 
 
 [TargetByBranch] AS (
-	SELECT
-		[BranchID]
+	SELECT [BranchID]
 	FROM [BranchTargetByYear]
 	WHERE [Year] = YEAR(@Date)
 		AND [Measure] = 'Fee Income'

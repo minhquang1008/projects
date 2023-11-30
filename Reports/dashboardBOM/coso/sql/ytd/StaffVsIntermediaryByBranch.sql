@@ -8,7 +8,6 @@ BEGIN
 DECLARE @Date DATETIME;
 SET @Date = @YYYYMMDD;
 
-
 WITH
 
 [Branch] AS (
@@ -17,55 +16,48 @@ WITH
 	WHERE [Year] = YEAR(@Date)
 )
 
-, [AllBroker] AS (
-	SELECT [brokerid]
-	FROM [brokerlevel] WHERE [date] = @Date
-	UNION ALL
-	SELECT [leadbrokerid]
-	FROM [brokerlevel] WHERE [date] = @Date
-)
-
-, [BrokerList] AS (
-	SELECT DISTINCT 
-		[brokerid] [BrokerID]
-	FROM [AllBroker]
-)
-
-, [BrokerActual] AS (
-	SELECT 
-		[BrokerList].[BrokerID]
-		, [broker].[branch_id] [BranchID]
-		, CASE
-			WHEN ISNUMERIC([brokerid]) = 1 THEN 'STAFF'
-			ELSE 'INTERMEDIARY'
-		END [brokerType]
-	FROM [BrokerList]
-	LEFT JOIN [broker]
-		ON [broker].[broker_id] = [BrokerList].[BrokerID]
-	WHERE
-		[branch_id] IS NOT NULL
+, [112701.Flex] AS (
+	SELECT
+		MAX([Ngay]) OVER (PARTITION BY MONTH([Ngay])) [MaxDate]
+		, [Ngay]
+		, [Ma] [BrokerID]
+		, [MaCN] [BranchID]
+		, [CoHieuLuc]
+	FROM [112701] 
+	WHERE [Ngay] = @Date
+		AND [CoHieuLuc] = N'Hoạt động'
+		AND [MaCN] IN (SELECT [BranchID] FROM [Branch])
 		AND (
-			ISNUMERIC(brokerid) = 1
-			OR [brokerid] LIKE 'A%'
+			ISNUMERIC([Ma]) = 1
+			OR [Ma] LIKE 'A%'
 		)
 )
 
-, [ValueBrokerEachBranch] AS (
+, [BrokerList] AS (
+	SELECT DISTINCT
+		[BrokerID]
+		, [BranchID]
+	FROM [112701.Flex] 
+	WHERE [MaxDate] = [Ngay]
+)
+
+, [BrokerNumber] AS (
 	SELECT
 		[BranchID]
-		, COUNT(CASE WHEN [brokerType] = 'STAFF' THEN 1 ELSE NULL END) [Staff]
-		, COUNT(CASE WHEN [brokerType] = 'INTERMEDIARY' THEN 1 ELSE NULL END) [Intermediary]
-	FROM [BrokerActual]
-	GROUP BY [BranchID]
+		, CASE
+			WHEN ISNUMERIC([BrokerID]) = 1 THEN 'STAFF'
+			ELSE 'INTERMEDIARY'
+		END [brokerType]
+	FROM [BrokerList]
 )
 
 SELECT
-	[Branch].[BranchID],
-	[Staff],
-	[Intermediary]
-FROM [Branch]
-LEFT JOIN [ValueBrokerEachBranch]
-	ON [ValueBrokerEachBranch].[BranchID] = [Branch].[BranchID]
+	[BranchID]
+	, COUNT(CASE WHEN [brokerType] = 'STAFF' THEN 1 ELSE NULL END) - 1 [Staff] -- không tính GĐCN nên -1 chỗ này
+	, COUNT(CASE WHEN [brokerType] = 'INTERMEDIARY' THEN 1 ELSE NULL END) [Intermediary]
+FROM [BrokerNumber]
+GROUP BY [BranchID]
+ORDER BY 1
 
 
 END

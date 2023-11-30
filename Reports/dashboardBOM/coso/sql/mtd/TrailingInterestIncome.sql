@@ -1,4 +1,4 @@
-/*MTD*/
+﻿/*MTD - BOM - CoSo*/
 
 /*Trailing - Interest Income*/
 
@@ -13,60 +13,55 @@ SET @Since = DATEADD(DAY,1,EOMONTH(DATEADD(YEAR,-1,@Date)));
 
 WITH 
 
-[MonthlyTargetByBranch] AS (
-    SELECT 
-        [BranchID] 
-		, [Year]
-        , CAST([Target] / 12 AS DECIMAL(30,2)) [Target]
-    FROM [BranchTargetByYear] 
+[BadDebt] AS (
+	SELECT 
+		CONVERT(VARCHAR(7), [Ngay], 126) [Ngay]
+		, [SoTaiKhoan]
+	FROM [BadDebtAccounts]
+	WHERE [Ngay] BETWEEN DATEADD(MONTH, -1, @Since) AND @Date
+		AND [LoaiNo] NOT IN (N'Hết nợ', N'TK đã đóng')
+)
+
+, [BranchList] AS (
+	SELECT [BranchID]
+	FROM [BranchTargetByYear] 
+	WHERE [Year] = YEAR(@Date)
+		AND [Measure] = 'Interest Income'
+)
+
+, [MonthlyTarget] AS (
+	SELECT 
+		[Year]
+        , CAST(SUM(CAST([Target] AS FLOAT)) / 12 AS DECIMAL(30,8)) [Target]
+	FROM [DWH-AppData].[dbo].[BMD.FlexTarget]
 	WHERE [Year] IN (YEAR(@Since), YEAR(@Date))
         AND [Measure] = 'Interest Income'
+	GROUP BY [Year]
 )
 
-, [Index] AS (
-	SELECT DISTINCT
-		EOMONTH([Date]) [Date]
-		, [z].[BranchID]
-	FROM [Date]
-	CROSS JOIN (SELECT DISTINCT [BranchID] FROM [MonthlyTargetByBranch]) [z]
-	WHERE [Date] BETWEEN  @Since AND @Date
-)
-
-, [ValueAllBrancheshByDate] AS (
+, [ValueAllBranchesByDate] AS (
 	SELECT
-		[rln0019].[date] [Date]
-		, [relationship].[branch_id] [BranchID]
-		, SUM([rln0019].[interest]) [Actual]
+		EOMONTH([rln0019].[date]) [Date]
+		, SUM(CASE WHEN [BadDebt].[SoTaiKhoan] IS NULL THEN [rln0019].[interest] ELSE 0 END) [Actual]
 	FROM [rln0019]
 	LEFT JOIN [relationship]
 		ON [relationship].[date] = [rln0019].[date]
 		AND [relationship].[sub_account] = [rln0019].[sub_account]
+	LEFT JOIN [BadDebt]
+		ON [BadDebt].[SoTaiKhoan] = [relationship].[account_code]
+		AND [BadDebt].[Ngay] = CONVERT(VARCHAR(7), DATEADD(MONTH, -1, [rln0019].[date]), 126)
 	WHERE [rln0019].[date] BETWEEN @Since AND @Date
-	GROUP BY [relationship].[branch_id], [rln0019].[date]
+		AND [relationship].[branch_id] IN (SELECT [BranchID] FROM [BranchList])
+	GROUP BY EOMONTH([rln0019].[date])
 )
 
-, [RawResult] AS (
-	SELECT
-		EOMONTH([ValueAllBrancheshByDate].[Date]) [Date]
-		, [MonthlyTargetByBranch].[BranchID]
-		, ISNULL(SUM([ValueAllBrancheshByDate].[Actual]),0) [Actual]
-		, MAX([MonthlyTargetByBranch].[Target]) [Target]
-	FROM [MonthlyTargetByBranch]
-	LEFT JOIN [ValueAllBrancheshByDate]
-		ON [MonthlyTargetByBranch].[Year] = YEAR([ValueAllBrancheshByDate].[Date])
-		AND [MonthlyTargetByBranch].[BranchID] = [ValueAllBrancheshByDate].[BranchID]
-	GROUP BY [MonthlyTargetByBranch].[BranchID], EOMONTH([ValueAllBrancheshByDate].[Date])
-)
-
-SELECT 
-	[Index].[Date]
-	, SUM(ISNULL([RawResult].[Actual],0)) [Actual]
-	, SUM(ISNULL([RawResult].[Target],0)) [Target]
-FROM [Index]
-LEFT JOIN [RawResult]
-	ON [Index].[Date] = [RawResult].[Date]
-	AND [Index].[BranchID] = [RawResult].[BranchID]
-GROUP BY [Index].[Date]
+SELECT
+	[ValueAllBranchesByDate].[Date]
+	, [ValueAllBranchesByDate].[Actual]
+	, [MonthlyTarget].[Target]
+FROM [MonthlyTarget]
+LEFT JOIN [ValueAllBranchesByDate]
+	ON YEAR([ValueAllBranchesByDate].[Date]) = [MonthlyTarget].[Year]
 ORDER BY 1
 
 

@@ -1,6 +1,6 @@
-﻿/*YTD*/
+﻿/*YTD - BOM - CoSo*/
 
-/* Headline Tag - Interest Income (Phần trăm hoàn thành chỉ tiêu ngày - Lãi vay ký quỹ) */
+/*Headline Tag - Interest Income (Phần trăm hoàn thành chỉ tiêu ngày - Lãi vay ký quỹ)*/
 
 BEGIN
 
@@ -20,9 +20,18 @@ ELSE
 DECLARE @FirstDateOfPreviousYear DATETIME;
 SET @FirstDateOfPreviousYear = (SELECT DATETIMEFROMPARTS(YEAR(@DateOfPreviousYear),1,1,0,0,0,0));
 
-WITH 
+WITH
 
-[BranchTarget] AS (
+[BadDebt] AS (
+	SELECT 
+		CONVERT(VARCHAR(7), [Ngay], 126) [Ngay]
+		, [SoTaiKhoan]
+	FROM [BadDebtAccounts]
+	WHERE [Ngay] BETWEEN DATEADD(MONTH, -1, @FirstDateOfPreviousYear) AND @Date
+		AND [LoaiNo] NOT IN (N'Hết nợ', N'TK đã đóng')
+)
+
+, [TargetByBranch] AS (
 	SELECT
 		[BranchID]
 	FROM [BranchTargetByYear]
@@ -30,51 +39,43 @@ WITH
 		AND [Measure] = 'Interest Income'
 )
 
-, [ValueByBranchOfPreviousPeriod] AS (
+, [PrevValuePeriod] AS (
 	SELECT
-		[relationship].[branch_id] [BranchID],
-		SUM([rln0019].[interest]) [InterestIncome]
+		SUM(CASE WHEN [BadDebt].[SoTaiKhoan] IS NULL THEN [rln0019].[interest] ELSE 0 END) [InterestIncome]
 	FROM [rln0019]
 	LEFT JOIN [relationship]
 		ON [relationship].[sub_account] = [rln0019].[sub_account]
 		AND [relationship].[date] = [rln0019].[date]
+	LEFT JOIN [BadDebt]
+		ON [BadDebt].[SoTaiKhoan] = [relationship].[account_code]
+		AND [BadDebt].[Ngay] = CONVERT(VARCHAR(7), DATEADD(MONTH, -1, [rln0019].[date]), 126)
 	WHERE [rln0019].[date] BETWEEN @FirstDateOfPreviousYear AND @DateOfPreviousYear
-	GROUP BY [relationship].[branch_id]
+		AND [relationship].[branch_id] IN (SELECT [BranchID] FROM [TargetByBranch])
 )
 
-, [ValueByBranchOfCurrentPeriod] AS (
+, [CurrentValuePeriod] AS (
 	SELECT
-		[relationship].[branch_id] [BranchID],
-		SUM([rln0019].[interest]) [InterestIncome]
+		SUM(CASE WHEN [BadDebt].[SoTaiKhoan] IS NULL THEN [rln0019].[interest] ELSE 0 END) [InterestIncome]
 	FROM [rln0019]
 	LEFT JOIN [relationship]
 		ON [relationship].[sub_account] = [rln0019].[sub_account]
 		AND [relationship].[date] = [rln0019].[date]
+	LEFT JOIN [BadDebt]
+		ON [BadDebt].[SoTaiKhoan] = [relationship].[account_code]
+		AND [BadDebt].[Ngay] = CONVERT(VARCHAR(7), DATEADD(MONTH, -1, [rln0019].[date]), 126)
 	WHERE [rln0019].[date] BETWEEN @FirstDateOfCurrentYear AND @Date
-	GROUP BY [relationship].[branch_id]
-)
-
-, [result] AS (
-	SELECT
-		[BranchTarget].[BranchID]
-		, ISNULL([ValueByBranchOfCurrentPeriod].[InterestIncome],0) [InterestIncome]
-		, ISNULL([ValueByBranchOfCurrentPeriod].[InterestIncome],0) - ISNULL([ValueByBranchOfPreviousPeriod].[InterestIncome],0) [AbsoluteChange]
-		, CASE 
-			WHEN ISNULL([ValueByBranchOfPreviousPeriod].[InterestIncome],0) = 0 THEN 0
-			ELSE ISNULL([ValueByBranchOfCurrentPeriod].[InterestIncome],0) / [ValueByBranchOfPreviousPeriod].[InterestIncome] - 1
-		END [RelativeChange]
-	FROM [BranchTarget]
-	LEFT JOIN [ValueByBranchOfPreviousPeriod]
-		ON [BranchTarget].[BranchID] = [ValueByBranchOfPreviousPeriod].[BranchID]
-	LEFT JOIN [ValueByBranchOfCurrentPeriod]
-		ON [BranchTarget].[BranchID] = [ValueByBranchOfCurrentPeriod].[BranchID]
+		AND [relationship].[branch_id] IN (SELECT [BranchID] FROM [TargetByBranch])
 )
 
 SELECT
-	SUM([InterestIncome]) [InterestIncome],
-	SUM([AbsoluteChange]) [AbsoluteChange],
-	SUM([RelativeChange]) [RelativeChange]
-FROM [result]
+	[CurrentValuePeriod].[InterestIncome] [InterestIncome]
+	, [CurrentValuePeriod].[InterestIncome] - [PrevValuePeriod].[InterestIncome] [AbsoluteChange]
+	, CASE 
+		WHEN [PrevValuePeriod].[InterestIncome] = 0 THEN 0
+		ELSE [CurrentValuePeriod].[InterestIncome] / [PrevValuePeriod].[InterestIncome] - 1
+	END [RelativeChange]
+FROM [PrevValuePeriod]
+CROSS JOIN [CurrentValuePeriod]
 
 
 END

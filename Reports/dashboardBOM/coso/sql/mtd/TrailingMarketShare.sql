@@ -1,4 +1,4 @@
-/*MTD*/
+﻿/*MTD - BOM - CoSo*/
 
 /*Trailing - Market Share*/
 
@@ -15,56 +15,55 @@ WITH
 
 [MarketTradingValue] AS (
 	SELECT
-		EOMONTH([Ngay]) [Date]
-		, CAST(SUM([TongGiaTriGiaoDich]) AS DECIMAL(30,2)) [TradingValue]
-	FROM [DWH-ThiTruong].[dbo].[KetQuaGiaoDichCoSoVietStock]
-	WHERE [San] IN ('HNX','HOSE')
-		AND [Ngay] BETWEEN @Since AND @Date
-	GROUP BY EOMONTH([Ngay])
+		EOMONTH([TXDATE]) [Date]
+		, CAST(SUM([MATCHVALUE]) AS DECIMAL(30,8)) [TradingValue]
+	FROM [Flex_MarketInfo]
+	WHERE [TRADEPLACE] IN ('HNX','HOSE')
+		AND [TXDATE] BETWEEN @Since AND @Date
+	GROUP BY EOMONTH([TXDATE])
 )
 
-, [MonthlyTargetByBranch] AS (
+, [BranchList] AS (
+	SELECT [BranchID]
+	FROM [BranchTargetByYear] 
+	WHERE [Year] = YEAR(@Date)
+		AND [Measure] = 'Market Share'
+)
+
+, [MonthlyTarget] AS (
     SELECT
 		[Year]
-		, [BranchID]
-		, CAST([Target] AS DECIMAL(30,10)) [Target]
-	FROM [BranchTargetByYear] 
+		, CAST(SUM(CAST([Target] AS FLOAT)) AS DECIMAL(30,8)) [Target]
+	FROM [DWH-AppData].[dbo].[BMD.FlexTarget]
 	WHERE [Year] IN (YEAR(@Since), YEAR(@Date))
 		AND [Measure] = 'Market Share'
+	GROUP BY [Year]
 )
 
 , [ValueAllBranchesByDate] AS (
 	SELECT
 		EOMONTH([trading_record].[date]) [Date]
-		, [relationship].[branch_id] [BranchID]
 		, SUM([trading_record].[value]) [Value]
 	FROM [trading_record]
 	LEFT JOIN [relationship]
-		ON [relationship].[sub_account] = [trading_record].[sub_account]
-		AND [relationship].[date] = [trading_record].[date]
+		ON [relationship].[date] = [trading_record].[date]
+		AND [relationship].[sub_account] = [trading_record].[sub_account]
 	WHERE [trading_record].[date] BETWEEN @Since AND @Date
-	GROUP BY [trading_record].[date], [relationship].[branch_id]
-)
-
-, [RawResult] AS (
-	SELECT
-		[ValueAllBranchesByDate].[Date] [Date]
-		, SUM([ValueAllBranchesByDate].[Value]) [Value]
-		, MAX([MonthlyTargetByBranch].[Target]) [Target]
-	FROM [ValueAllBranchesByDate]
-	INNER JOIN [MonthlyTargetByBranch]
-		ON [MonthlyTargetByBranch].[BranchID] = [ValueAllBranchesByDate].[BranchID]
-		AND [MonthlyTargetByBranch].[Year] = YEAR([ValueAllBranchesByDate].[date])
-	GROUP BY [ValueAllBranchesByDate].[Date]
+		AND [relationship].[branch_id] IN (SELECT [BranchID] FROM [BranchList])
+		AND [trading_record].[type_of_asset] NOT IN (N'Trái phiếu doanh nghiệp', N'Trái phiếu', N'Trái phiếu chính phủ')
+		AND [relationship].[account_code] NOT LIKE '022P%'
+	GROUP BY EOMONTH([trading_record].[date])
 )
 
 SELECT
-	[RawResult].[Date]
-	, [RawResult].[Value] / [MarketTradingValue].[TradingValue] / 2 [Actual]
-	, [RawResult].[Target]
-FROM [RawResult]
+	[ValueAllBranchesByDate].[Date]
+	, [ValueAllBranchesByDate].[Value] / [MarketTradingValue].[TradingValue] / 2 [Actual]
+	, [MonthlyTarget].[Target]
+FROM [MonthlyTarget]
+LEFT JOIN [ValueAllBranchesByDate]
+	ON YEAR([ValueAllBranchesByDate].[Date]) = [MonthlyTarget].[Year]
 LEFT JOIN [MarketTradingValue]
-	ON [MarketTradingValue].[Date] = [RawResult].[Date]
+	ON [ValueAllBranchesByDate].[Date] = [MarketTradingValue].[Date]
 ORDER BY 1
 
 

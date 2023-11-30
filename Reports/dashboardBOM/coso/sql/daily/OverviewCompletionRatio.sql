@@ -1,6 +1,6 @@
-﻿/*Daily - BOM*/
+﻿/*Daily - BOM - CoSo*/
 
-/*Overview Completion Ratio - All measures (Phần trăm hoàn thành chỉ tiêu ngày - đồ thị cột có format 4 vòng tròn)*/
+/*Overview Completion Ratio - All measures*/
 
 BEGIN
 
@@ -16,24 +16,74 @@ SET @WorkDaysOfYear = (
 		AND YEAR([Date]) = YEAR(@Date)
 );
 
-DECLARE @MarketTradingValue DECIMAL(30,2) 
+DECLARE @MarketTradingValue DECIMAL(30,8) 
 SET @MarketTradingValue = (
 	SELECT
-		SUM([TongGiaTriGiaoDich]) [TradingValue]
-	FROM [DWH-ThiTruong].[dbo].[KetQuaGiaoDichCoSoVietStock]
-	WHERE [San] IN ('HNX','HOSE')
-		AND [Ngay] = @Date
+		CAST(SUM([MATCHVALUE]) AS DECIMAL(30,8)) [TradingValue]
+	FROM [Flex_MarketInfo]
+	WHERE [TRADEPLACE] IN ('HNX','HOSE')
+		AND [TXDATE] = @Date
 );
 
-WITH 
+WITH
 
-[Rel] AS (
+[BadDebt] AS (
+	SELECT [SoTaiKhoan]
+	FROM [BadDebtAccounts]
+	WHERE MONTH([Ngay]) = MONTH(@Date) - 1
+)
+
+, [RRE0386.Flex] AS (
+	SELECT
+		[AUTOID]
+		, MIN([AUTOID]) OVER (PARTITION BY [SoTaiKhoan], [NgayMoTK]) [MinID]
+		, [NgayMoTK]
+		, [SoTaiKhoan]
+		, [IDNhanVienMoTK]
+	FROM [RRE0386]
+	WHERE [RRE0386].[NgayMoTK] = @Date
+		AND [RRE0386].[IDNhanVienHienTai] IS NOT NULL
+)
+
+, [FindLastBranchID] AS (
 	SELECT DISTINCT
-		[branch_id] [BranchID]
-		, [broker_id] [BrokerID]
-		, [account_code] [AccountCode]
+		[relationship].[date]
+		, [relationship].[account_code] [SoTaiKhoan]
+		, [broker_id]
+		, LAST_VALUE([branch_id]) OVER(PARTITION BY [account_code], [broker_id] ORDER BY [account_code]) [branch_id]
 	FROM [relationship]
-	WHERE [date] = @Date
+	WHERE [relationship].[date] = @Date
+		AND [relationship].[account_code] IN (SELECT [SoTaiKhoan] FROM [RRE0386.Flex])
+)
+
+, [Rel] AS (
+	SELECT
+		[Date]
+		, [SoTaiKhoan]
+		, CASE
+			WHEN [broker_id] IS NULL AND [date] <> @Date THEN LEAD([branch_id]) OVER (PARTITION BY [SoTaiKhoan] ORDER BY [date])
+			ELSE [branch_id]
+		END [BranchID]
+	FROM [FindLastBranchID]
+)
+
+, [_RRE0386] AS (
+	SELECT
+		[NgayMoTK]
+		, [SoTaiKhoan]
+		, [IDNhanVienMoTK]
+	FROM [RRE0386.Flex]
+	WHERE [MinID] = [AUTOID]
+)
+
+, [TargetOrigin] AS (
+	SELECT
+		[Year]
+		, [BranchID]
+		, [Measure]
+		, CAST([Target] AS FLOAT) [Target]
+	FROM [DWH-AppData].[dbo].[BMD.FlexTarget]
+	WHERE [Year] = YEAR(@Date)
 )
 
 , [CompanyTarget] AS (
@@ -41,17 +91,16 @@ WITH
 		SUM([Market Share]) [MarketShare]
 		, SUM([Fee Income]) / @WorkDaysOfYear [FeeIncome]
 		, SUM([Interest Income]) / @WorkDaysOfYear [InterestIncome]
-		, CAST(SUM([New Accounts]) / @WorkDaysOfYear AS DECIMAL (20, 0)) [NewAccounts]
-	FROM [BranchTargetByYear]
+		, CAST(SUM([New Accounts]) / @WorkDaysOfYear AS DECIMAL (20, 3)) [NewAccounts]
+	FROM [TargetOrigin]
 	PIVOT (
 		SUM([Target]) FOR [Measure] IN ([Market Share], [Fee Income], [Interest Income], [New Accounts])
 	) [z]
-	WHERE [Year] = YEAR(@Date)
 )
 
 , [ActualMarketShare] AS (
 	SELECT
-		SUM([trading_record].[value]) / @MarketTradingValue / 2 [Actual]
+		CAST(CAST(SUM([trading_record].[value]) AS DECIMAL(30,8)) / @MarketTradingValue / 2 AS DECIMAL(30,8)) [Actual]
 		, MAX([Target].[MarketShare]) [Target]
 	FROM [trading_record]
 	LEFT JOIN [relationship]
@@ -60,6 +109,8 @@ WITH
 	CROSS JOIN (SELECT [MarketShare] FROM [CompanyTarget]) [Target]
 	WHERE [trading_record].[date] = @Date
 		AND [relationship].[branch_id] IN (SELECT DISTINCT [BranchID] FROM [BranchTargetByYear] WHERE [Year] = YEAR(@Date))
+		AND [trading_record].[type_of_asset] NOT IN (N'Trái phiếu doanh nghiệp', N'Trái phiếu', N'Trái phiếu chính phủ')
+		AND [relationship].[account_code] NOT LIKE '022P%'
 )
 
 , [ActualFeeIncome] AS (
@@ -73,6 +124,8 @@ WITH
 	CROSS JOIN (SELECT [FeeIncome] FROM [CompanyTarget]) [Target]
 	WHERE [trading_record].[date] = @Date
 		AND [relationship].[branch_id] IN (SELECT DISTINCT [BranchID] FROM [BranchTargetByYear] WHERE [Year] = YEAR(@Date))
+		AND [trading_record].[type_of_asset] NOT IN (N'Trái phiếu doanh nghiệp', N'Trái phiếu', N'Trái phiếu chính phủ')
+		AND [relationship].[account_code] NOT LIKE '022P%'
 )
 
 , [ActualInterestIncome] AS (
@@ -86,21 +139,18 @@ WITH
 	CROSS JOIN (SELECT [InterestIncome] FROM [CompanyTarget]) [Target]
 	WHERE [rln0019].[date] = @Date
 		AND [relationship].[branch_id] IN (SELECT DISTINCT [BranchID] FROM [BranchTargetByYear] WHERE [Year] = YEAR(@Date))
+		AND [relationship].[account_code] NOT IN (SELECT [SoTaiKhoan] FROM [BadDebt])
 )
 
 , [ActualNewAccounts] AS (
 	SELECT
 		CAST(COUNT(*) AS DECIMAL(8,2)) [Actual]
 		, MAX([Target].[NewAccounts]) [Target]
-	FROM [customer_change]
+	FROM [_RRE0386]
 	LEFT JOIN [Rel]
-		ON [Rel].[AccountCode] = [customer_change].[account_code]
+		ON [Rel].[SoTaiKhoan] = [_RRE0386].[SoTaiKhoan]
 	CROSS JOIN (SELECT [NewAccounts] FROM [CompanyTarget]) [Target]
 	WHERE [Rel].[BranchID] IN (SELECT DISTINCT [BranchID] FROM [BranchTargetByYear] WHERE [Year] = YEAR(@Date))
-		AND [customer_change].[open_date] = @Date
-		AND [customer_change].[open_or_close] = 'Mo'
-		AND [Rel].[BrokerID] IS NOT NULL -- không tính các tài khoản chưa duyệt nên chưa có môi giới
-		AND [customer_change].[open_date] = @Date
 )
 
 SELECT

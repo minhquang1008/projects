@@ -1,6 +1,8 @@
-/*MTD*/
+﻿/*MTD - BOM - CoSo*/
 
 /*Total branches - Staff vs Intermediary*/
+
+/*sửa lại theo yêu cầu không lấy CTV*/
 
 BEGIN
 
@@ -17,40 +19,21 @@ WITH
 	WHERE [Year] = YEAR(@Date)
 )
 
-, [AllBroker] AS (
-	SELECT [brokerid]
-	FROM [brokerlevel] WHERE [date] = @Date
-	UNION ALL
-	SELECT [leadbrokerid]
-	FROM [brokerlevel] WHERE [date] = @Date
-)
-
 , [BrokerList] AS (
-	SELECT DISTINCT 
-		[brokerid] [BrokerID]
-	FROM [AllBroker]
-)
-
-, [BrokerActual] AS (
-	SELECT 
-		[BrokerList].[BrokerID]
-		, [broker].[branch_id] [BranchID]
-	FROM [BrokerList]
-	LEFT JOIN [broker]
-		ON [broker].[broker_id] = [BrokerList].[BrokerID]
-	WHERE
-		[branch_id] IS NOT NULL
-		AND (
-			ISNUMERIC(brokerid) = 1
-			OR [brokerid] LIKE 'A%'
-		)
+	SELECT DISTINCT
+		[MaCN] [BranchID]
+		, [Ma]
+	FROM [112701]
+	WHERE [Ngay] = @Date
+		AND [CoHieuLuc] = N'Hoạt động'
+		AND ISNUMERIC([Ma]) = 1
 )
 
 , [ValueBrokerEachBranch] AS (
 	SELECT
 		[BranchID]
-		, COUNT([BrokerID]) [BrokerNum]
-	FROM [BrokerActual]
+		, COUNT([Ma]) - 1 [BrokerNum] -- không tính GĐCN
+	FROM [BrokerList]
 	GROUP BY [BranchID]
 )
 
@@ -62,13 +45,15 @@ WITH
 	FROM [ValueBrokerEachBranch]
 )
 
-SELECT	
-	[Branch].[BranchID],
-	ISNULL([BrokerNum], 0) [Value],
-	ISNULL([Contribution], 0) [Contribution]
+SELECT
+	RANK() OVER(ORDER BY ISNULL([BrokerNum], 0) DESC) [Rank]
+	, [Branch].[BranchID]
+	, ISNULL([BrokerNum], 0) [Value]
+	, ISNULL([Contribution], 0) [Contribution]
 FROM [Branch]
 LEFT JOIN [Contribution]
 	ON [Contribution].[BranchID] = [Branch].[BranchID]
+ORDER BY 1
 
 
 END

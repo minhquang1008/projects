@@ -1,4 +1,4 @@
-﻿/*Daily*/
+﻿/*Daily - BOM - CoSo*/
 
 /*Headline Tag - New Accounts (Phần trăm hoàn thành chỉ tiêu ngày - Tài khoản mở mới) */
 
@@ -23,7 +23,7 @@ SET @Prev = (
 
 WITH
 
-[BranchTarget] AS (
+[TargetByBranch] AS (
 	SELECT
 		[BranchID]
 	FROM [BranchTargetByYear]
@@ -31,64 +31,80 @@ WITH
 		AND [Measure] = 'New Accounts'
 )
 
-, [Rel] AS (
+, [RRE0386.Flex] AS (
+	SELECT
+		[AUTOID]
+		, MIN([AUTOID]) OVER (PARTITION BY [SoTaiKhoan], [NgayMoTK]) [MinID]
+		, [NgayMoTK]
+		, [SoTaiKhoan]
+		, [IDNhanVienMoTK]
+	FROM [RRE0386]
+	WHERE [RRE0386].[NgayMoTK] IN (@Prev, @Date)
+		AND [RRE0386].[IDNhanVienHienTai] IS NOT NULL
+)
+
+, [FindLastBranchID] AS (
 	SELECT DISTINCT
-		[date] [Date]
-		, [branch_id] [BranchID]
-		, [broker_id] [BrokerID]
-		, [account_code] [AccountCode]
+		[relationship].[date]
+		, [relationship].[account_code] [SoTaiKhoan]
+		, [broker_id]
+		, LAST_VALUE([branch_id]) OVER(PARTITION BY [account_code], [broker_id] ORDER BY [account_code]) [branch_id]
 	FROM [relationship]
-	WHERE [date] IN (@Prev, @Date)
+	WHERE [relationship].[date] IN (@Prev, @Date)
+		AND [relationship].[account_code] IN (SELECT [SoTaiKhoan] FROM [RRE0386.Flex])
 )
 
-, [PrevValueByBranch] AS (
+, [Rel] AS (
 	SELECT
-		[Rel].[BranchID]
-		, COUNT(*) [NewAccounts]
-	FROM [customer_change]
-	LEFT JOIN [Rel]
-		ON [Rel].[AccountCode] = [customer_change].[account_code]
-		AND [Rel].[Date] = [customer_change].[open_date]
-	WHERE [customer_change].[open_date] = @Prev
-		AND [customer_change].[open_or_close] = 'Mo'
-		AND [Rel].[BrokerID] IS NOT NULL -- không tính các tài khoản chưa duyệt nên chưa có môi giới
-	GROUP BY [Rel].[BranchID]
+		[Date]
+		, [SoTaiKhoan]
+		, CASE
+			WHEN [broker_id] IS NULL AND [date] <> @Date THEN LEAD([branch_id]) OVER (PARTITION BY [SoTaiKhoan] ORDER BY [date])
+			ELSE [branch_id]
+		END [BranchID]
+	FROM [FindLastBranchID]
 )
 
-, [TodayValueByBranch] AS (
+, [_RRE0386] AS (
 	SELECT
-		[Rel].[BranchID]
-		, COUNT(*) [NewAccounts]
-	FROM [customer_change]
-	LEFT JOIN [Rel]
-		ON [Rel].[AccountCode] = [customer_change].[account_code]
-		AND [Rel].[date] = [customer_change].[open_date]
-	WHERE [customer_change].[open_date] = @Date
-		AND [customer_change].[open_or_close] = 'Mo'
-		AND [Rel].[BrokerID] IS NOT NULL -- không tính các tài khoản chưa duyệt nên chưa có môi giới
-	GROUP BY [Rel].[BranchID]
+		[NgayMoTK]
+		, [SoTaiKhoan]
+		, [IDNhanVienMoTK]
+	FROM [RRE0386.Flex]
+	WHERE [MinID] = [AUTOID]
 )
 
-, [result] AS (
-	SELECT 
-		[BranchTarget].[BranchID]
-		, ISNULL([TodayValueByBranch].[NewAccounts],0) [NewAccounts]
-		, CAST(ISNULL([TodayValueByBranch].[NewAccounts],0) AS DECIMAL(10,5)) - CAST(ISNULL([PrevValueByBranch].[NewAccounts],0) AS DECIMAL(10,5)) [AbsoluteChange] 
-		, CASE ISNULL([PrevValueByBranch].[NewAccounts],0) WHEN 0 THEN 0
-			ELSE CAST(ISNULL([TodayValueByBranch].[NewAccounts],0) AS DECIMAL(10,5)) / CAST([PrevValueByBranch].[NewAccounts] AS DECIMAL(10,5)) - 1 
-		END [RelativeChange]
-	FROM [BranchTarget]
-	LEFT JOIN [PrevValueByBranch]
-		ON [BranchTarget].[BranchID] = [PrevValueByBranch].[BranchID]
-	LEFT JOIN [TodayValueByBranch]
-		ON [BranchTarget].[BranchID] = [TodayValueByBranch].[BranchID]
+, [PrevValue] AS (
+	SELECT
+		COUNT(*) [NewAccounts]
+	FROM [_RRE0386]
+	LEFT JOIN [Rel]
+		ON [Rel].[SoTaiKhoan] = [_RRE0386].[SoTaiKhoan]
+		AND [Rel].[Date] = [_RRE0386].[NgayMoTK]
+	WHERE [Rel].[BranchID] IN (SELECT [BranchID] FROM [TargetByBranch])
+		AND [_RRE0386].[NgayMoTK] = @Prev
+)
+
+, [TodayValue] AS (
+	SELECT
+		COUNT(*) [NewAccounts]
+	FROM [_RRE0386]
+	LEFT JOIN [Rel]
+		ON [Rel].[SoTaiKhoan] = [_RRE0386].[SoTaiKhoan]
+		AND [Rel].[Date] = [_RRE0386].[NgayMoTK]
+	WHERE [Rel].[BranchID] IN (SELECT [BranchID] FROM [TargetByBranch])
+		AND [_RRE0386].[NgayMoTK] = @Date
 )
 
 SELECT
-	SUM([NewAccounts]) [NewAccounts],
-	SUM([AbsoluteChange]) [AbsoluteChange],
-	SUM([RelativeChange]) [RelativeChange]
-FROM [result]
+	[TodayValue].[NewAccounts] [NewAccounts]
+	, CAST([TodayValue].[NewAccounts] AS DECIMAL(10,5)) - CAST([PrevValue].[NewAccounts] AS DECIMAL(10,5)) [AbsoluteChange]
+	, CASE [PrevValue].[NewAccounts]
+		WHEN 0 THEN 0
+		ELSE CAST([TodayValue].[NewAccounts] AS DECIMAL(10,5)) / CAST([PrevValue].[NewAccounts] AS DECIMAL(10,5)) - 1
+	END [RelativeChange]
+FROM [PrevValue]
+CROSS JOIN [TodayValue]
 
 
 END

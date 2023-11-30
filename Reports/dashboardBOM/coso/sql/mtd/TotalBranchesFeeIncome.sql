@@ -1,4 +1,4 @@
-/*MTD*/
+﻿/*MTD - BOM - CoSo*/
 
 /*Total branches - Fee Income*/
 
@@ -14,6 +14,12 @@ SET @FirstDateOfMonth = (SELECT DATETIMEFROMPARTS(YEAR(@Date),MONTH(@Date),1,0,0
 WITH
 
 [Branch] AS (
+    SELECT DISTINCT [BranchID]
+	FROM [BranchTargetByYear]
+	WHERE [Year] = YEAR(@Date)
+)
+
+, [TargetByBranch] AS (
     SELECT [BranchID]
     FROM [BranchTargetByYear]
     WHERE [Measure] = 'Fee Income'
@@ -29,6 +35,9 @@ WITH
 		ON [trading_record].[date] = [relationship].[date]
 		AND [trading_record].[sub_account] = [relationship].[sub_account]
 	WHERE [trading_record].[date] BETWEEN @FirstDateOfMonth AND @Date
+		AND [relationship].[branch_id] IN (SELECT [BranchID] FROM [TargetByBranch])
+		AND [trading_record].[type_of_asset] NOT IN (N'Trái phiếu doanh nghiệp', N'Trái phiếu', N'Trái phiếu chính phủ')
+		AND [relationship].[account_code] NOT LIKE '022P%'
 	GROUP BY [relationship].[branch_id]
 )
 
@@ -43,13 +52,15 @@ WITH
 	FROM [ValueTotalBranches]
 )
 
-SELECT	
-	[Branch].[BranchID]
+SELECT
+	RANK() OVER(ORDER BY ISNULL([FeeIncome], 0) DESC) [Rank]
+	, [Branch].[BranchID]
 	, ISNULL([FeeIncome], 0) [Value]
 	, ISNULL([Contribution], 0) [Contribution]
 FROM [Branch]
 LEFT JOIN [Contribution]
 	ON [Contribution].[BranchID] = [Branch].[BranchID]
+ORDER BY 1
 
 
 END

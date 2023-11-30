@@ -1,6 +1,6 @@
 ﻿/*MTD - BOM - PhaiSinh*/
 
-/*Trailing - Market Share (So sánh 12 tháng gần nhất) */
+/*Trailing - Market Share (So sánh 12 tháng gần nhất)*/
 
 BEGIN
 
@@ -16,11 +16,11 @@ WITH
 
 [MarketTradingValue] AS (
 	SELECT
-		EOMONTH([Ngay]) [Date]
-		, SUM(ISNULL([KhoiLuongKhopLenh],0) + ISNULL([KhoiLuongThoaThuan],0)) [TotalContracts]
-	FROM [DWH-ThiTruong].[dbo].[KetQuaGiaoDichPhaiSinhVietStock]
-	WHERE [Ngay] BETWEEN @Since AND @Date 
-	GROUP BY EOMONTH([Ngay])
+		EOMONTH([Txdate]) [Date]
+		, SUM(ISNULL([FDS_MarketInfo].[MkTradingVol],0)) [TotalContracts]
+	FROM [DWH-CoSo].[dbo].[FDS_MarketInfo]
+	WHERE [Txdate] BETWEEN @Since AND @Date 
+	GROUP BY EOMONTH([Txdate])
 )
 
 , [BranchList] AS (
@@ -31,10 +31,10 @@ WITH
 )
 
 , [MonthlyTarget] AS (
-    SELECT 
+    SELECT
         [Year]
-        , CAST(SUM([Target]) AS DECIMAL(20,7)) [Target]
-    FROM [BranchTargetByYear] 
+        , CAST(SUM(CAST([Target] AS FLOAT)) AS DECIMAL(30,8)) [Target]
+    FROM [DWH-AppData].[dbo].[BMD.FDSTarget]
 	WHERE [Year] IN (YEAR(@Since), YEAR(@Date))
         AND [Measure] = 'Market Share'
 	GROUP BY [Year]
@@ -65,8 +65,8 @@ WITH
 
 SELECT
 	[ValueAllBranchesByDate].[Date]
-	, [ValueAllBranchesByDate].[Value] / [MarketTradingValue].[TotalContracts] / 2 [Actual]
-	, [MonthlyTarget].[Target]
+	, ISNULL([ValueAllBranchesByDate].[Value] / [MarketTradingValue].[TotalContracts] / 2, 0) [Actual]
+	, ISNULL([MonthlyTarget].[Target], 0) [Target]
 FROM [MonthlyTarget]
 LEFT JOIN [ValueAllBranchesByDate]
 	ON YEAR([ValueAllBranchesByDate].[Date]) = [MonthlyTarget].[Year]

@@ -11,9 +11,9 @@ SET @Date = @YYYYMMDD;
 DECLARE @TodayTotalContracts DECIMAL(30,2);
 SET @TodayTotalContracts = (
 	SELECT
-		SUM(ISNULL([KhoiLuongKhopLenh],0) + ISNULL([KhoiLuongThoaThuan],0)) [TotalContracts]
-	FROM [DWH-ThiTruong].[dbo].[KetQuaGiaoDichPhaiSinhVietStock]
-	WHERE [Ngay] = @Date
+		SUM(ISNULL([FDS_MarketInfo].[MkTradingVol],0)) [TotalContracts]
+	FROM [DWH-CoSo].[dbo].[FDS_MarketInfo]
+	WHERE [Txdate] = @Date
 );
 
 WITH
@@ -21,8 +21,8 @@ WITH
 [TargetByBranch] AS (
     SELECT 
         [BranchID] 
-        , CAST([Target] AS DECIMAL(7,6)) [MarketShare]
-    FROM [BranchTargetByYear] 
+        , CAST(CAST([Target] AS FLOAT) AS DECIMAL(30,8)) [MarketShare]
+    FROM [DWH-AppData].[dbo].[BMD.FDSTarget]
     WHERE [Year] = YEAR(@Date)
         AND [Measure] = 'Market Share'
 )
@@ -39,7 +39,7 @@ WITH
 , [BranchActual] AS (
     SELECT 
         [Rel].[BranchID] [BranchID]
-        , SUM([RRE0018].[SoLuongHopDong]) / @TodayTotalContracts / 2 [MarketShare]
+        , CAST(CAST(SUM([RRE0018].[SoLuongHopDong]) AS DECIMAL(30,8)) / @TodayTotalContracts / 2 AS DECIMAL(30,8)) [MarketShare]
     FROM [RRE0018]
     LEFT JOIN [Rel]
         ON [RRE0018].[SoTaiKhoan] = [Rel].[AccountCode]
@@ -54,6 +54,7 @@ SELECT
 FROM [TargetByBranch]
 LEFT JOIN [BranchActual]
     ON [TargetByBranch].[BranchID] = [BranchActual].[BranchID]
+ORDER BY 1
 
 
 END

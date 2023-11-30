@@ -23,17 +23,17 @@ SET @FirstDateOfPreviousYear = (SELECT DATETIMEFROMPARTS(YEAR(@DateOfPreviousYea
 DECLARE @PrevTotalContracts DECIMAL(30,2);
 SET @PrevTotalContracts = (
 	SELECT
-		SUM(ISNULL([KhoiLuongKhopLenh],0) + ISNULL([KhoiLuongThoaThuan],0)) [TotalContracts]
-	FROM [DWH-ThiTruong].[dbo].[KetQuaGiaoDichPhaiSinhVietStock]
-	WHERE [Ngay] BETWEEN @FirstDateOfPreviousYear AND @DateOfPreviousYear
+		SUM(ISNULL([FDS_MarketInfo].[MkTradingVol],0)) [TotalContracts]
+	FROM [DWH-CoSo].[dbo].[FDS_MarketInfo]
+	WHERE [Txdate] BETWEEN @FirstDateOfPreviousYear AND @DateOfPreviousYear
 );
 
 DECLARE @CurrentTotalContracts DECIMAL(30,2);
 SET @CurrentTotalContracts = (
 	SELECT
-		SUM(ISNULL([KhoiLuongKhopLenh],0) + ISNULL([KhoiLuongThoaThuan],0)) [TotalContracts]
-	FROM [DWH-ThiTruong].[dbo].[KetQuaGiaoDichPhaiSinhVietStock]
-	WHERE [Ngay] BETWEEN @FirstDateOfCurrentYear AND @Date
+		SUM(ISNULL([FDS_MarketInfo].[MkTradingVol],0)) [TotalContracts]
+	FROM [DWH-CoSo].[dbo].[FDS_MarketInfo]
+	WHERE [Txdate] BETWEEN @FirstDateOfCurrentYear AND @Date
 );
 
 WITH 
@@ -58,7 +58,7 @@ WITH
 
 , [PrevMarketShare] AS (
 	SELECT
-		SUM([RRE0018].[SoLuongHopDong]) / @PrevTotalContracts / 2 [MarketShare]
+		CAST(CAST(SUM([RRE0018].[SoLuongHopDong]) AS DECIMAL(30,8)) / @PrevTotalContracts / 2 AS DECIMAL(30,8)) [MarketShare]
 	FROM [RRE0018]
 	LEFT JOIN [Rel]
         ON [Rel].[AccountCode] = [RRE0018].[SoTaiKhoan]
@@ -69,7 +69,7 @@ WITH
 
 , [CurrentMarketShare] AS (
 	SELECT
-		SUM([RRE0018].[SoLuongHopDong]) / @CurrentTotalContracts / 2 [MarketShare]
+		CAST(CAST(SUM([RRE0018].[SoLuongHopDong]) AS DECIMAL(30,8)) / @CurrentTotalContracts / 2 AS DECIMAL(30,8)) [MarketShare]
 	FROM [RRE0018]
 	LEFT JOIN [Rel]
 		ON [Rel].[AccountCode] = [RRE0018].[SoTaiKhoan]

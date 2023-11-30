@@ -1,4 +1,4 @@
-﻿/*YTD*/
+﻿/*YTD - BOM - CoSo*/
 
 /*Actual vs Target - Fee Income (Phí giao dịch - Thực tế và chỉ tiêu) */
 
@@ -13,11 +13,11 @@ SET @FirstDateOfYear = (SELECT DATETIMEFROMPARTS(YEAR(@Date),1,1,0,0,0,0));
 
 WITH
 
-[BranchTarget] AS (
+[TargetByBranch] AS (
     SELECT 
         [BranchID] 
-        , CAST([Target] AS DECIMAL(20,2)) [FeeIncome]
-    FROM [BranchTargetByYear] 
+        , CAST([Target] AS FLOAT) [FeeIncome]
+    FROM [DWH-AppData].[dbo].[BMD.FlexTarget]
     WHERE [Year] = YEAR(@Date)
         AND [Measure] = 'Fee Income'
 )
@@ -31,17 +31,19 @@ WITH
         ON [trading_record].[date] = [relationship].[date]
         AND [trading_record].[sub_account] = [relationship].[sub_account]
     WHERE [trading_record].[date] BETWEEN @FirstDateOfYear AND @Date
+		AND [trading_record].[type_of_asset] NOT IN (N'Trái phiếu doanh nghiệp', N'Trái phiếu', N'Trái phiếu chính phủ')
+		AND [relationship].[account_code] NOT LIKE '022P%'
     GROUP BY [relationship].[branch_id]
 )
 
 SELECT
-	[BranchTarget].[BranchID]
-	, SUM(ISNULL([BranchActual].[FeeIncome],0)) [Actual]
-    , SUM([BranchTarget].[FeeIncome]) [Target]
-FROM [BranchTarget]
+	[TargetByBranch].[BranchID]
+	, ISNULL([BranchActual].[FeeIncome],0) [Actual]
+    , [TargetByBranch].[FeeIncome] [Target]
+FROM [TargetByBranch]
 LEFT JOIN [BranchActual]
-    ON [BranchTarget].[BranchID] = [BranchActual].[BranchID]
-GROUP BY [BranchTarget].[BranchID]
+    ON [TargetByBranch].[BranchID] = [BranchActual].[BranchID]
+ORDER BY 1
 
 
 END

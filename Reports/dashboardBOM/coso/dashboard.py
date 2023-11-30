@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import sys
-sys.path.append('../')
+sys.path.append('..')
 from color import Color
 from artist import Artist
 from chart import (
@@ -115,7 +115,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=GroupedBar(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 50, self.startFirstRowY + 2100),
+            topLeft=(self.startFromSecondRowX + 50, self.startFirstRowY + 2000),
         )
 
     def _drawTotalBranchesByMarketShare(self):
@@ -124,7 +124,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=Donut(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 2100),
+            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 2000),
         )
 
     def _drawCompareMarketShareOf12Months(self):
@@ -133,7 +133,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=TrailingBars(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 5800, self.startFirstRowY + 2100),
+            topLeft=(self.startFromSecondRowX + 5800, self.startFirstRowY + 2000),
         )
 
     # row 3 ----------------------------------------------------------------------------------------------------
@@ -143,7 +143,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=GroupedBar(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 50, self.startFirstRowY + 4100),
+            topLeft=(self.startFromSecondRowX + 50, self.startFirstRowY + 4000),
         )
 
     def _drawTotalBranchesByTradingFee(self):
@@ -152,7 +152,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=Donut(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 4100),
+            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 4200),
         )
 
     def _drawCompareTradingFeeOf12Months(self):
@@ -161,7 +161,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=TrailingBars(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 5800, self.startFirstRowY + 4100),
+            topLeft=(self.startFromSecondRowX + 5800, self.startFirstRowY + 4000),
         )
 
     # row 4 ----------------------------------------------------------------------------------------------------
@@ -171,7 +171,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=GroupedBar(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 50, self.startFirstRowY + 6100),
+            topLeft=(self.startFromSecondRowX + 50, self.startFirstRowY + 6000),
         )
 
     def _drawTotalBranchesByMarginInterest(self):
@@ -180,7 +180,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=Donut(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 6100),
+            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 6200),
         )
 
     def _drawCompareMarketInterestOf12Months(self):
@@ -189,7 +189,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=TrailingBars(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 5800, self.startFirstRowY + 6100),
+            topLeft=(self.startFromSecondRowX + 5800, self.startFirstRowY + 6000),
         )
 
     # row 5 ----------------------------------------------------------------------------------------------------
@@ -199,7 +199,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=GroupedBar(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 50, self.startFirstRowY + 7900),
+            topLeft=(self.startFromSecondRowX + 50, self.startFirstRowY + 7780),
         )
 
     def _drawTotalBranchesByNewAccount(self):
@@ -208,7 +208,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=Donut(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 8100),
+            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 7780),
         )
 
     def _drawCompareNewAccountOf12Months(self):
@@ -217,7 +217,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=TrailingBars(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 5800, self.startFirstRowY + 7900),
+            topLeft=(self.startFromSecondRowX + 5800, self.startFirstRowY + 7780),
         )
 
     # row 6 ----------------------------------------------------------------------------------------------------
@@ -227,7 +227,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=StalkedBarWithBranches(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 9700),
+            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 9600),
         )
 
     def _drawTotalBranchesByStaffAndIntermediary(self):
@@ -236,7 +236,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=Donut(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 9900),
+            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 9800),
         )
 
     def _drawCompareStaffAndIntermediaryOf12Months(self):
@@ -245,8 +245,10 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=StalkedBar(artist.bgColor),
-            topLeft=(self.startFromSecondRowX + 5800, self.startFirstRowY + 9700),
+            topLeft=(self.startFromSecondRowX + 5800, self.startFirstRowY + 9600),
         )
+
+    # write text ----------------------------------------------------------------------------------------------------
 
     def _writeHeader(self):
         dateString = self.dataContainer.dataDate.strftime('%d.%m.%Y')
@@ -284,7 +286,7 @@ class _Dashboard(ABC):
             text=text,
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFirstRowX + 250, self.startFirstRowY - 170),
+            topLeft=(self.startFirstRowX + 200, self.startFirstRowY - 170),
             align='left',
         )
 
@@ -314,17 +316,17 @@ class _Dashboard(ABC):
             text=f'Market share by Branch',
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 1800),
+            topLeft=(self.startFromSecondRowX + 200, self.startFirstRowY + 1835),
             align='left',
         )
 
-    def _writeMarketShareByBranchBelow(self):
+    def _writeMarketShareByBranchCompletionRate(self):
         artist = self.artist
         artist.write(
             text=f'Completion rate',
-            size=80,
+            size=40,
             color=Color.WHITE,
-            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 1900),
+            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 1950),
             align='left',
         )
 
@@ -362,17 +364,17 @@ class _Dashboard(ABC):
             text=f'Trading fee by branch',
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 3705),
+            topLeft=(self.startFromSecondRowX + 200, self.startFirstRowY + 3815),
             align='left',
         )
 
-    def _writeTradingFeeByBranchBelow(self):
+    def _writeTradingFeeByBranchCompletionRate(self):
         artist = self.artist
         artist.write(
             text=f'Completion rate',
-            size=80,
+            size=40,
             color=Color.WHITE,
-            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 3805),
+            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 3930),
             align='left',
         )
 
@@ -382,7 +384,7 @@ class _Dashboard(ABC):
             text=f'Total branches by trading fee',
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 3705),
+            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 3815),
             align='left',
         )
 
@@ -399,7 +401,7 @@ class _Dashboard(ABC):
             text=text,
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFirstRowX + 5800, self.startFirstRowY + 3705),
+            topLeft=(self.startFirstRowX + 5800, self.startFirstRowY + 3815),
             align='left',
         )
 
@@ -409,17 +411,17 @@ class _Dashboard(ABC):
             text=f'Margin interest by branch',
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 5760),
+            topLeft=(self.startFromSecondRowX + 200, self.startFirstRowY + 5830),
             align='left',
         )
 
-    def _writeMarginInterestByBranchBelow(self):
+    def _writeMarginInterestByBranchCompletionRate(self):
         artist = self.artist
         artist.write(
             text=f'Completion rate',
-            size=80,
+            size=40,
             color=Color.WHITE,
-            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 5860),
+            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 5945),
             align='left',
         )
 
@@ -429,7 +431,7 @@ class _Dashboard(ABC):
             text=f'Total branches by margin interest',
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 5760),
+            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 5830),
             align='left',
         )
 
@@ -437,16 +439,16 @@ class _Dashboard(ABC):
         artist = self.artist
         className = self.__class__.__qualname__
         if className == 'MTD':
-            text = f'Compare market interest of 12 months'
+            text = f'Compare margin interest of 12 months'
         elif className == 'YTD':
-            text = f'Compare market interest of years'
+            text = f'Compare margin interest of years'
         else:
             raise ValueError(f'Invalid Dashboard object {className}')
         artist.write(
             text=text,
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFirstRowX + 5800, self.startFirstRowY + 5760),
+            topLeft=(self.startFirstRowX + 5800, self.startFirstRowY + 5830),
             align='left',
         )
 
@@ -456,17 +458,17 @@ class _Dashboard(ABC):
             text=f'New account by branch',
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 7660),
+            topLeft=(self.startFromSecondRowX + 200, self.startFirstRowY + 7600),
             align='left',
         )
 
-    def _writeNewAccountByBranchBelow(self):
+    def _writeNewAccountByBranchCompletionRate(self):
         artist = self.artist
         artist.write(
             text=f'Completion rate',
-            size=80,
+            size=40,
             color=Color.WHITE,
-            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 7760),
+            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 7710),
             align='left',
         )
 
@@ -476,7 +478,7 @@ class _Dashboard(ABC):
             text=f'Total branches by new account',
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 7660),
+            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 7600),
             align='left',
         )
 
@@ -493,7 +495,7 @@ class _Dashboard(ABC):
             text=text,
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFirstRowX + 5800, self.startFirstRowY + 7660),
+            topLeft=(self.startFirstRowX + 5800, self.startFirstRowY + 7600),
             align='left',
         )
 
@@ -503,7 +505,7 @@ class _Dashboard(ABC):
             text=f'Staff & Intermediary by branch',
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFromSecondRowX + 250, self.startFirstRowY + 9500),
+            topLeft=(self.startFromSecondRowX + 190, self.startFirstRowY + 9400),
             align='left',
         )
 
@@ -513,7 +515,7 @@ class _Dashboard(ABC):
             text=f'Total branches by staff headcount',
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 9500),
+            topLeft=(self.startFromSecondRowX + 3200, self.startFirstRowY + 9400),
             align='left',
         )
 
@@ -530,7 +532,7 @@ class _Dashboard(ABC):
             text=text,
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFirstRowX + 5800, self.startFirstRowY + 9500),
+            topLeft=(self.startFirstRowX + 5800, self.startFirstRowY + 9400),
             align='left',
         )
 
@@ -570,16 +572,17 @@ class Daily(_Dashboard):
         self._writeFluctuationFeeIncome()
         self._writeFluctuationInterestIncome()
         self._writeMarketShareByBranch()
-        self._writeMarketShareByBranchBelow()
+        self._writeMarketShareByBranchCompletionRate()
         self._writeTotalBranchesByMarketShare()
         self._writeTradingFeeByBranch()
-        self._writeTradingFeeByBranchBelow()
+        self._writeTradingFeeByBranchCompletionRate()
         self._writeTotalBranchesByTradingFee()
         self._writeMarginInterestByBranch()
-        self._writeMarginInterestByBranchBelow()
+        self._writeMarginInterestByBranchCompletionRate()
+        self._writeMarginInterestByBranch()
         self._writeTotalBranchesByMarginInterest()
         self._writeNewAccountByBranch()
-        self._writeNewAccountByBranchBelow()
+        self._writeNewAccountByBranchCompletionRate()
         self._writeTotalBranchesByNewAccount()
         self._writeStaffAndIntermediaryByBranch()
         self._writeTotalBranchesByStaffAndIntermediary()
@@ -622,19 +625,19 @@ class MTD(_Dashboard):
         self._writeFluctuationFeeIncome()
         self._writeFluctuationInterestIncome()
         self._writeMarketShareByBranch()
-        self._writeMarketShareByBranchBelow()
+        self._writeMarketShareByBranchCompletionRate()
         self._writeTotalBranchesByMarketShare()
         self._writeCompareMarketShareOf12Months()
         self._writeTradingFeeByBranch()
-        self._writeTradingFeeByBranchBelow()
+        self._writeTradingFeeByBranchCompletionRate()
         self._writeTotalBranchesByTradingFee()
-        self._writeMarginInterestByBranch()
-        self._writeMarginInterestByBranchBelow()
         self._writeCompareTradingFeeOf12Months()
+        self._writeMarginInterestByBranch()
+        self._writeMarginInterestByBranchCompletionRate()
         self._writeTotalBranchesByMarginInterest()
         self._writeCompareMarketInterestOf12Months()
         self._writeNewAccountByBranch()
-        self._writeNewAccountByBranchBelow()
+        self._writeNewAccountByBranchCompletionRate()
         self._writeTotalBranchesByNewAccount()
         self._writeCompareNewAccountOf12Months()
         self._writeStaffAndIntermediaryByBranch()
@@ -679,19 +682,19 @@ class YTD(_Dashboard):
         self._writeFluctuationFeeIncome()
         self._writeFluctuationInterestIncome()
         self._writeMarketShareByBranch()
-        self._writeMarketShareByBranchBelow()
+        self._writeMarketShareByBranchCompletionRate()
         self._writeTotalBranchesByMarketShare()
         self._writeCompareMarketShareOf12Months()
         self._writeTradingFeeByBranch()
-        self._writeTradingFeeByBranchBelow()
+        self._writeTradingFeeByBranchCompletionRate()
         self._writeTotalBranchesByTradingFee()
-        self._writeMarginInterestByBranch()
-        self._writeMarginInterestByBranchBelow()
         self._writeCompareTradingFeeOf12Months()
+        self._writeMarginInterestByBranch()
+        self._writeMarginInterestByBranchCompletionRate()
         self._writeTotalBranchesByMarginInterest()
         self._writeCompareMarketInterestOf12Months()
         self._writeNewAccountByBranch()
-        self._writeNewAccountByBranchBelow()
+        self._writeNewAccountByBranchCompletionRate()
         self._writeTotalBranchesByNewAccount()
         self._writeCompareNewAccountOf12Months()
         self._writeStaffAndIntermediaryByBranch()

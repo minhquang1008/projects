@@ -1,6 +1,6 @@
-﻿/*YTD*/
+﻿/*YTD - BOM - CoSo*/
 
-/*Stacked column - Staff vs Intermediary - trục X thể hiện theo tháng */
+/*Stacked column - Staff vs Intermediary - trục X thể hiện theo tháng*/
 
 BEGIN
 
@@ -13,70 +13,71 @@ SET @Since = DATETIMEFROMPARTS(YEAR(@Date)-4,1,1,0,0,0,0);
 
 WITH 
 
-[YearlyTargetByBranch] AS (
-    SELECT DISTINCT [Year], [BranchID]
-    FROM [BranchTargetByYear]
-	WHERE [Year] BETWEEN YEAR(@Since) AND YEAR(@Date)
-)
-
-, [BrokerList] AS (
-	SELECT
-		[date]
-		, [brokerid]
-	FROM [brokerlevel] WHERE [date] BETWEEN @Since AND @Date
-	UNION ALL (
-		SELECT 
-			[date], 
-			[leadbrokerid]
-		FROM [brokerlevel] WHERE [date] BETWEEN @Since AND @Date
-	)
-)
-
-, [ValueOfBrokerList] AS (
+[Index] AS (
 	SELECT DISTINCT
 		DATETIMEFROMPARTS(YEAR([Date]),12,31,0,0,0,0) [Date]
-		, [brokerid] [BrokerID]
-	FROM [BrokerList]
-	WHERE
-		[Date] IN (DATETIMEFROMPARTS(YEAR([Date]),12,31,0,0,0,0), @Date)
+	FROM [Date]
+	WHERE [Date] BETWEEN  @Since AND @Date
+)
+
+, [Branch] AS (
+    SELECT DISTINCT [BranchID]
+    FROM [BranchTargetByYear] 
+	WHERE [Year] = YEAR(@Date)
+)
+
+, [112701.Flex] AS (
+	SELECT
+		MAX([Ngay]) OVER (PARTITION BY YEAR([Ngay])) [MaxDate]
+		, [Ngay]
+		, [Ma] [BrokerID]
+		, [MaCN] [BranchID]
+		, [CoHieuLuc]
+	FROM [112701] 
+	WHERE [Ngay] BETWEEN @Since AND @Date
+		AND [CoHieuLuc] = N'Hoạt động'
+		AND [MaCN] IN (SELECT [BranchID] FROM [Branch])
 		AND (
-			ISNUMERIC(brokerid) = 1
-			OR [brokerid] LIKE 'A%'
+			ISNUMERIC([Ma]) = 1
+			OR [Ma] LIKE 'A%'
 		)
 )
 
-, [ValueBrokerEachBranch] AS (
-	SELECT
-		DATETIMEFROMPARTS([YearlyTargetByBranch].[Year],12,31,0,0,0,0) [Date]
-		, [YearlyTargetByBranch].[BranchID]
-		, CASE
-			WHEN ISNUMERIC([brokerid]) = 1 THEN 'STAFF'
-			WHEN [brokerid] LIKE 'A%' THEN 'INTERMEDIARY'
-		END [brokerType]
-	FROM [ValueOfBrokerList]
-	LEFT JOIN [broker]
-		ON [broker].[broker_id] = [ValueOfBrokerList].[BrokerID]
-	RIGHT JOIN [YearlyTargetByBranch]
-		ON [YearlyTargetByBranch].[Year] = YEAR([ValueOfBrokerList].[Date])
-		AND [broker].[branch_id] = [YearlyTargetByBranch].[BranchID]
+, [BrokerList] AS (
+	SELECT DISTINCT
+		CASE
+			WHEN [MaxDate] = DATETIMEFROMPARTS(YEAR([MaxDate]),12,31,0,0,0,0) THEN [MaxDate]
+			ELSE DATETIMEFROMPARTS(YEAR([MaxDate]),12,31,0,0,0,0)
+		END [Date]
+		, [BrokerID]
+		, [BranchID]
+	FROM [112701.Flex] 
+	WHERE [MaxDate] = [Ngay]
 )
 
-, [ValueBrokerByType] AS (
+, [BrokerNumber] AS (
 	SELECT
-		[p].[Date],
-		[p].[STAFF],
-		[p].[INTERMEDIARY]
-	FROM [ValueBrokerEachBranch]
-	PIVOT (
-		COUNT([BranchID]) FOR [brokerType] IN ([STAFF], [INTERMEDIARY])
-	) [p]
+		DATETIMEFROMPARTS(YEAR([Date]),12,31,0,0,0,0) [Date]
+		, [BrokerID]
+		, [BranchID]
+		, CASE
+			WHEN ISNUMERIC([BrokerID]) = 1 THEN 'STAFF'
+			ELSE 'INTERMEDIARY'
+		END [brokerType]
+	FROM [BrokerList]
 )
 
 SELECT
-	[Date]
-	, [STAFF]
-	, [INTERMEDIARY]
-FROM [ValueBrokerByType]
+	[Index].[Date]
+	, CASE COUNT(CASE WHEN [brokerType] = 'STAFF' THEN 1 ELSE NULL END)
+		WHEN 0 THEN 0
+		ELSE COUNT(CASE WHEN [brokerType] = 'STAFF' THEN 1 ELSE NULL END) - 10 -- chỗ này trừ 10 vì ko tính 10 giám đốc chi nhánh
+	END [Staff] 
+	, COUNT(CASE WHEN [brokerType] = 'INTERMEDIARY' THEN 1 ELSE NULL END) [Intermediary]
+FROM [Index]
+LEFT JOIN [BrokerNumber]
+	ON [BrokerNumber].[Date] = [Index].[Date]
+GROUP BY [Index].[Date]
 ORDER BY 1
 
 

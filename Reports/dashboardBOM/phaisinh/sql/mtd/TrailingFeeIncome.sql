@@ -23,8 +23,8 @@ WITH
 , [MonthlyTarget] AS (
     SELECT 
 		[Year]
-        , CAST(SUM([Target]) / 12 AS DECIMAL(30,2)) [Target]
-    FROM [BranchTargetByYear] 
+        , CAST(SUM(CAST([Target] AS FLOAT)) / 12 AS DECIMAL(30,8)) [Target]
+    FROM [DWH-AppData].[dbo].[BMD.FDSTarget]
 	WHERE [Year] IN (YEAR(@Since), YEAR(@Date))
         AND [Measure] = 'Fee Income'
 	GROUP BY [Year]
@@ -43,7 +43,7 @@ WITH
 , [ValueAllBranchesByDate] AS (
 	SELECT
 		EOMONTH([RRE0018].[Ngay]) [Date]
-		, ISNULL(SUM([RRE0018].[TongPhiGiaoDich]), 0) [Actual]
+		, ISNULL(SUM([RRE0018].[PhiGiaoDichPHSThu]), 0) [Actual]
 	FROM [RRE0018]
 	LEFT JOIN [Rel]
         ON [Rel].[AccountCode] = [RRE0018].[SoTaiKhoan]

@@ -2,20 +2,23 @@ import os
 import datetime as dt
 
 from PIL import Image
+from os.path import join
 
 from color import Color
 import data
 
 
 def run(domain, dataDate: dt.datetime):
-    os.chdir(fr"D:\ProjectCompany\DataAnalytics\automation\brokerage\dashboardBOM")
+    os.chdir(r"D:\ProjectCompany\DataAnalytics\automation\brokerage\dashboardBOM")
 
     if domain == 'CoSo':
         from coso import dashboard
         padColor = Color.LIGHTBLUE
+        dashboardType = 'Underlying'
     elif domain == 'PhaiSinh':
         from phaisinh import dashboard
         padColor = Color.LIGHTGREEN
+        dashboardType = 'Derivatives'
     else:
         raise ValueError('Invalid domain, it must be either "CoSo" or "PhaiSinh"')
 
@@ -50,10 +53,18 @@ def run(domain, dataDate: dt.datetime):
             im=dashboardImage,
             box=((commonWidth + pad) * i, 0),
         )
-    imgPath = fr'{os.getcwd()}\{domain.lower()}\result\{dataDate.strftime("%Y%m%d")}_{domain}.png'
+    rootDir = r"C:\Users\quangpham\Desktop"
+    if not os.path.isdir(join(rootDir, f"{dataDate.year}")):
+        os.mkdir((join(rootDir, f"{dataDate.year}")))
+    if not os.path.isdir(join(rootDir, f"{dataDate.year}", f"{dataDate.strftime('%Y.%m.%d')}")):
+        os.mkdir((join(rootDir, f"{dataDate.year}", f"{dataDate.strftime('%Y.%m.%d')}")))
+
+    savedPath = join(rootDir, f"{dataDate.year}", f"{dataDate.strftime('%Y.%m.%d')}")
+    imgName = fr"Brokerage_{dashboardType}_{dataDate.strftime('%Y%m%d')}.png"
+    imgPath = join(savedPath, imgName)
     result.save(imgPath)
     del result  # memory clearance
 
 
-# run('CoSo', dt.datetime(2023,4,28))
 run('CoSo', dt.datetime(2023,5,25))
+# run('PhaiSinh', dt.datetime(2023,5,25))

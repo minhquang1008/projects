@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import sys
-sys.path.append('../')
+sys.path.append('..')
 from color import Color
 from artist import Artist
 from chart import (
@@ -94,7 +94,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=GroupedBar(artist.bgColor),
-            topLeft=(self.startFirstRowX + 200, self.startFirstRowY + 2000)
+            topLeft=(self.startFirstRowX + 200, self.startFirstRowY + 2100)
         )
 
     def _drawTotalBranchesByMarketShare(self):
@@ -122,7 +122,7 @@ class _Dashboard(ABC):
         artist.draw(
             table=table,
             chart=Donut(artist.bgColor),
-            topLeft=(self.startFirstRowX + 3500, self.startFirstRowY + 4400)
+            topLeft=(self.startFirstRowX + 3500, self.startFirstRowY + 4300)
         )
 
     # row 4 --------------------------------------------------------------------------
@@ -197,30 +197,30 @@ class _Dashboard(ABC):
     def _writeContributionMarketShare(self):
         artist = self.artist
         artist.write(
-            text=f'Market share by Branch',
+            text=f'Market share by branch',
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFirstRowX + 200, self.startFirstRowY + 1750),
+            topLeft=(self.startFirstRowX + 200, self.startFirstRowY + 1910),
             align='left'
         )
 
-    def _writeContributionMarketShareBelow(self):
+    def _writeContributionMarketShareCompletionRate(self):
         artist = self.artist
         artist.write(
             text=f'Completion rate',
-            size=80,
+            size=40,
             color=Color.WHITE,
-            topLeft=(self.startFirstRowX + 200, self.startFirstRowY + 1850),
+            topLeft=(self.startFirstRowX + 360, self.startFirstRowY + 2050),
             align='left'
         )
 
     def _writeContributionFeeIncome(self):
         artist = self.artist
         artist.write(
-            text=f'Total  branches by market share',
+            text=f'Total branches by market share',
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFirstRowX + 3500, self.startFirstRowY + 1750),
+            topLeft=(self.startFirstRowX + 3500, self.startFirstRowY + 1900),
             align='left'
         )
 
@@ -230,34 +230,27 @@ class _Dashboard(ABC):
             text=f'Total branches by trading fee',
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFirstRowX + 3500, self.startFirstRowY + 3750),
+            topLeft=(self.startFirstRowX + 3500, self.startFirstRowY + 4000),
             align='left',
         )
 
     def _writeTrailingFeeIncome(self):
-        className = self.__class__.__qualname__
-        if className == 'Daily':
-            text = f'Trading fee by Branch'
-        if className == 'MTD':
-            text = f'Trading fee by Branch'
-        elif className == 'YTD':
-            text = f'Trading fee by Branch'
         artist = self.artist
         artist.write(
-            text=text,
+            text=f'Trading fee by branch',
             size=80,
             color=Color.GREEN,
-            topLeft=(self.startFirstRowX + 200, self.startFirstRowY + 3750),
+            topLeft=(self.startFirstRowX + 200, self.startFirstRowY + 4010),
             align='left',
         )
 
-    def _writeTrailingFeeIncomeBelow(self):
+    def _writeTrailingFeeIncomeCompletionRate(self):
         artist = self.artist
         artist.write(
             text='Completion rate',
-            size=80,
+            size=40,
             color=Color.WHITE,
-            topLeft=(self.startFirstRowX + 200, self.startFirstRowY + 3850),
+            topLeft=(self.startFirstRowX + 360, self.startFirstRowY + 4150),
             align='left',
         )
 
@@ -265,9 +258,9 @@ class _Dashboard(ABC):
         artist = self.artist
         className = self.__class__.__qualname__
         if className == 'MTD':
-            text = f'Compare market share of 12 months (*)'
+            text = f'Compare market share of 12 months'
         elif className == 'YTD':
-            text = f'Compare market share of years (*)'
+            text = f'Compare market share of years'
         else:
             raise ValueError(f'Invalid Dashboard object {className}')
         artist.write(
@@ -282,9 +275,9 @@ class _Dashboard(ABC):
         artist = self.artist
         className = self.__class__.__qualname__
         if className == 'MTD':
-            text = f'Compare trading fee of 12 months (*)'
+            text = f'Compare trading fee of 12 months'
         elif className == 'YTD':
-            text = f'Compare trading fee of years (*)'
+            text = f'Compare trading fee of years'
         else:
             raise ValueError(f'Invalid Dashboard object {className}')
         artist.write(
@@ -321,11 +314,11 @@ class Daily(_Dashboard):
         self._writeOverviewCompletionRatio()
         self._writeFluctuationFeeIncome()
         self._writeContributionMarketShare()
-        self._writeContributionMarketShareBelow()
+        self._writeContributionMarketShareCompletionRate()
         self._writeContributionFeeIncome()
         self._writeTop3FeeIncome()
         self._writeTrailingFeeIncome()
-        self._writeTrailingFeeIncomeBelow()
+        self._writeTrailingFeeIncomeCompletionRate()
 
 
 class MTD(_Dashboard):
@@ -352,11 +345,11 @@ class MTD(_Dashboard):
         self._writeOverviewCompletionRatio()
         self._writeFluctuationFeeIncome()
         self._writeContributionMarketShare()
-        self._writeContributionMarketShareBelow()
+        self._writeContributionMarketShareCompletionRate()
         self._writeContributionFeeIncome()
         self._writeTop3FeeIncome()
         self._writeTrailingFeeIncome()
-        self._writeTrailingFeeIncomeBelow()
+        self._writeTrailingFeeIncomeCompletionRate()
         self._writeCompareMarketShareOf12Months()
         self._writeCompareTradingFeeOf12Months()
 
@@ -385,10 +378,10 @@ class YTD(_Dashboard):
         self._writeOverviewCompletionRatio()
         self._writeFluctuationFeeIncome()
         self._writeContributionMarketShare()
-        self._writeContributionMarketShareBelow()
+        self._writeContributionMarketShareCompletionRate()
         self._writeContributionFeeIncome()
         self._writeTop3FeeIncome()
         self._writeTrailingFeeIncome()
-        self._writeTrailingFeeIncomeBelow()
+        self._writeTrailingFeeIncomeCompletionRate()
         self._writeCompareMarketShareOf12Months()
         self._writeCompareTradingFeeOf12Months()

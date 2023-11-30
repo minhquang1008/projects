@@ -1,6 +1,6 @@
 ﻿/*Daily - BOM - PhaiSinh*/
 
-/*Actual vs Target - Fee Income (Phí giao dịch - Thực tế và chỉ tiêu) */
+/*Actual vs Target - Fee Income (Phí giao dịch - Thực tế và chỉ tiêu)*/
 
 BEGIN
 
@@ -21,8 +21,8 @@ WITH
 [TargetByBranch] AS (
     SELECT 
         [BranchID] 
-        , CAST([Target] / @WorkDaysOfYear AS DECIMAL(20,2)) [FeeIncome]
-    FROM [BranchTargetByYear] 
+        , CAST(CAST([Target] AS FLOAT) / @WorkDaysOfYear AS DECIMAL(30,8)) [FeeIncome]
+    FROM [DWH-AppData].[dbo].[BMD.FDSTarget]
     WHERE [Year] = YEAR(@Date)
         AND [Measure] = 'Fee Income'
 )
@@ -54,6 +54,7 @@ SELECT
 FROM [TargetByBranch]
 LEFT JOIN [BranchActual]
     ON [TargetByBranch].[BranchID] = [BranchActual].[BranchID]
+ORDER BY 1
 
 
 END
