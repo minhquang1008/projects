@@ -155,6 +155,7 @@ if IP == '116.118.113.140' or IP == '115.78.11.116':
 
     # ----------------------------------------------------------------------------
     data = Data()
+    the_path = " "
     if clicked and text_search and t1 > t2:
         try:
             the_path = returning_dictionary.get(clicked)
