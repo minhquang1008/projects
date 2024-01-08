@@ -3,3 +3,5 @@ pandas
 streamlit_antd_components
 openpyxl
 datetime
+streamlit_javascript
+

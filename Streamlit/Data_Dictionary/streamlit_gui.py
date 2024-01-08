@@ -146,7 +146,7 @@ if IP == '116.118.113.140' or IP == '115.78.11.116':
         st.write(f"The client ip is {IP}")
         if st.button("Update"):
             with st.spinner('Wait for it...'):
-                returning_dictionary = get_updated(sheet_list, company_table, customer_table, margin_table, trading_table)
+                returning_dictionary = get_updated(sheet_list, company_table, margin_table, trading_table, customer_table)
                 with open('returning_dictionary.pkl', 'wb') as file:
                     pickle.dump(returning_dictionary, file)
                 last_update = dt.datetime.now()
@@ -156,14 +156,14 @@ if IP == '116.118.113.140' or IP == '115.78.11.116':
     # ----------------------------------------------------------------------------
     data = Data()
     if clicked and text_search and t1 > t2:
-        the_path = returning_dictionary.get(clicked[0])
+        the_path = returning_dictionary.get(clicked)
     else:
         the_path = text_search
-    st.text(the_path.title())
+    st.text(the_path.upper())
     if len(the_path.split('/')) == 3:
-        data.table = the_path.split('/')[1].title()
+        data.table = the_path.split('/')[1].upper()
         df = data.getData(the_path.split('/')[-1])
-        st.write(f'''## {the_path.split('/')[-1].title()}''')
+        st.write(f'''## {the_path.split('/')[-1].upper()}''')
         st.write('ARTICLE - ' + str(df['ARTICLE'].iloc[0].strftime("%d/%m/%Y")))
         if str(df['DESCRIPTION'].iloc[0]) != 'nan':
             st.write(str(df['DESCRIPTION'].iloc[0]))
