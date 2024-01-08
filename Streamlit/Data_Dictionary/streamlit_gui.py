@@ -26,9 +26,10 @@ def client_ip():
     except(Exception,):
         pass
 
-sheet_list = ['DIM - BRANCH', 'DIM - CUSTOMER', 'DIM - BROKER', 'FACT - OUTSTANDING', 'FACT - POSTED_TRANSACTION',
-              'FACT - ROOM', 'FACT - LIMIT_REQUESTS', 'FACT - CUSTOMER_CONTRACT', 'DIM - STOCK_INFO',
-              'FACT - TRADING', 'FACT - PRICE_BOARD']
+sheet_list = ['DIM - BRANCH', 'DIM - BROKER', 'DIM - STOCK_INFO',
+              'FACT - OUTSTANDING', 'FACT - ROOM', 'FACT - LIMIT_REQUESTS',
+              'FACT - TRADING', 'FACT - PRICE_BOARD', 'FACT - POSTED_TRANSACTION',
+              'DIM - CUSTOMER', 'FACT - CUSTOMER_CONTRACT']
 company_table = ['DIM - BRANCH', 'DIM - BROKER', 'DIM - STOCK_INFO']
 margin_table = ['FACT - OUTSTANDING', 'FACT - ROOM', 'FACT - LIMIT_REQUESTS']
 trading_table = ['FACT - TRADING', 'FACT - PRICE_BOARD', 'FACT - POSTED_TRANSACTION']
